@@ -73,6 +73,21 @@ client.on('message', msg => {
 		}
 	    break;
 
+
+	    case 'openQ':
+		if(QueueTable[msg.channel]==undefined){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(QueueTable[msg.channel].owner!=msg.author){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		QueueTable[msg.channel].open=true;
+		msg.channel.send("Queue reopened, joins allowed.");		
+	    break;
+
+
 	    case 'join':
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
@@ -124,8 +139,8 @@ client.on('message', msg => {
 			msg.reply("Invalid Permissions.");
 			break;
 		}
-		if(QueueTable[msg.channel].queued==[]){
-			msg.autor.send("Queue is empty.");
+		if(QueueTable[msg.channel].queued.length==0){
+			msg.author.send("Queue is empty.");
 			break;
 		}
 		msg.author.send(QueueTable[msg.channel].queued);

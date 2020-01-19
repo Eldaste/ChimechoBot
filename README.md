@@ -8,6 +8,8 @@ Commands:
 
 .closeQ - Disallows more users from joining. Deletes Queue when all users have been sent a code.
 
+.openQ - Reopens Queue after a .closeQ before all users have emptied.
+
 .join - Enqueues a user if they aren't in the queue already.
 
 .viewQ - Sends the Queue owner (the one that created it) a list of who is in the queue.
