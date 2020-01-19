@@ -25,3 +25,12 @@ Commands:
 Bot can be tried out here https://discord.gg/44j5GBg
 
 Scaleable to a server without a set numebr of channels.
+
+
+
+Upcoming: 
+
+Configuration options:
+  - Max number of attempts
+  - Allow users to add themselevs multiple times in a single Queue
+  - Change Room size
