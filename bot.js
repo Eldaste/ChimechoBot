@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const auth = require('./auth.json');
 const blackfile = require('./blacklist.json');
+const modNameFile = require('./modwords.json');
 const prefix='.'
 const defaultNum=3;
 const defaultDuplication=false;
@@ -9,6 +10,7 @@ const defaultDuplication=false;
 
 var QueueTable={};
 var channelBlacklist=blackfile.blacklisted;
+var modRoles=modNameFile.modNames;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -51,6 +53,30 @@ client.on('message', msg => {
 			break;
 		}
 		if(QueueTable[msg.channel].owner!=msg.author){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		QueueTable[msg.channel]=undefined;
+		msg.reply("Queue cleared.");
+	    break;
+
+
+	    case 'modDelete':
+		if(QueueTable[msg.channel]==undefined){
+			msg.reply("No active Queue.");
+			break;
+		}
+		var roleList = msg.guild.roles.array();
+		var allowedRole=undefined;
+		
+		for(x in roleList){
+			if(modRoles.indexOf(roleList[x].name)!=-1){
+				allowedRole=roleList[x];
+				break;
+			}
+		}
+		
+		if(undefined==allowedRole||!msg.member.roles.has(allowedRole.id)){
 			msg.reply("Invalid Permissions.");
 			break;
 		}

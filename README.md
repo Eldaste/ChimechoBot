@@ -8,6 +8,8 @@ Commands:
 
 .closeQ - Disallows more users from joining. Deletes Queue when all users have been sent a code.
 
+.modDelete - Forces delete of any Queue regardless of Queue owner. Useable only by those with the role "Mod" or "Mods" 
+
 .openQ - Reopens Queue after a .closeQ before all users have emptied.
 
 .join - Enqueues a user if they aren't in the queue already.
