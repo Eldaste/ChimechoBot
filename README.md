@@ -20,7 +20,7 @@ Commands:
 
 .leave - Removes self from the Queue.
 
-.activeQueues - For use by the one running the bot itself to ID the number of giveaways (to find safe times or matinance).
+.activeQueues - For use by the one running the bot itself to ID the number of giveaways (to find safe times for matinance).
 
 
 
