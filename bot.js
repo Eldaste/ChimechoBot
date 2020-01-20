@@ -1,13 +1,14 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const auth = require('./auth.json');
+const blackfile = require('./blacklist.json');
 const prefix='.'
 const defaultNum=3;
 const defaultDuplication=false;
 
 
 var QueueTable={};
-var channelBlacklist=["646053713907023889","646549334258614283","646461433340493846","647701301031075862","667842739336904732","646048212448313344","646048859746992158","654809293543047199","666388961303855115","646048969163538453"];
+var channelBlacklist=blackfile.blacklisted;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -15,6 +16,9 @@ client.on('ready', () => {
 
 
 client.on('message', msg => {
+
+    if (channelBlacklist.indexOf(msg.channel.id) != -1)
+	return;
 
     var message=msg.content;
 
@@ -29,28 +33,19 @@ client.on('message', msg => {
 	//console.log("Command "+cmd)
         //console.log("Args "+args)
 
-
-        switch(cmd) {
+	switch(cmd) {
 
 	    case 'createQ':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]!=undefined){
 			msg.reply("This channel has an active Queue.");
 			break;
 		}
 		QueueTable[msg.channel]={queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, open:true}
 		msg.reply("Queue created.");
-		//console.log(QueueTable[msg.channel])
+
 	    break;
 
 	    case 'deleteQ':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
@@ -64,10 +59,6 @@ client.on('message', msg => {
 	    break;
 
 	    case 'closeQ':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
@@ -87,10 +78,6 @@ client.on('message', msg => {
 
 
 	    case 'openQ':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
@@ -105,10 +92,6 @@ client.on('message', msg => {
 
 
 	    case 'join':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
@@ -130,10 +113,6 @@ client.on('message', msg => {
 	    break;
 
 	    case 'leave':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
@@ -155,10 +134,6 @@ client.on('message', msg => {
 	    break;
 
 	    case 'viewQ':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
@@ -185,10 +160,6 @@ client.on('message', msg => {
 	    break;
 
 	    case 'next':
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
-    {
-      break;
-    }
 		if(QueueTable[msg.channel]==undefined){
 			msg.reply("No active Queue.");
 			break;
