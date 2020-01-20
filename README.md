@@ -8,7 +8,7 @@ Commands:
 
 .closeQ - Disallows more users from joining. Deletes Queue when all users have been sent a code.
 
-.modDelete - Forces delete of any Queue regardless of Queue owner. Useable only by those with the role "Mod" or "Mods" 
+.modDelete - Forces delete of any Queue regardless of Queue owner. Useable only by those with a role in the modwords file. 
 
 .openQ - Reopens Queue after a .closeQ before all users have emptied.
 
@@ -26,7 +26,8 @@ Commands:
 
 Bot can be tried out here https://discord.gg/44j5GBg
 
-Scaleable to a server without a set numebr of channels.
+Scaleable to a server without a set numeber of channels.
+Blacklist for individual channels exists.
 
 
 
