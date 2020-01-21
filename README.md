@@ -33,7 +33,14 @@ Blacklist for individual channels exists.
 
 Upcoming: 
 
+Ability to use the "next" command from DM if you have an open Queue
+
+Ability to track how many unique users join a given raid Queue
+
+Ability for Mods to lock certian option configurations on a per-server basis
+
 Configuration options:
   - Max number of attempts
   - Allow users to add themselevs multiple times in a single Queue
   - Change Room size
+  - Unique user tracking on/off 
