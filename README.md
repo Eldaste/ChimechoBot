@@ -1,4 +1,4 @@
-Proof of concept for a raid queue bot.
+Raid queue bot for organizing Pokemon Max raids with Discord servers.
 
 Commands:
 
@@ -29,6 +29,14 @@ Bot can be tried out here https://discord.gg/44j5GBg
 Scaleable to a server without a set numeber of channels.
 Blacklist for individual channels exists.
 
+Requires a 'auth.json' file containing a 'token' field that contains the bot's token.
+
+To use: 
+
+Download the files
+Run an 'npm install' 
+Create the auth.json file
+Run 'node bot.js'
 
 
 Upcoming: 

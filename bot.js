@@ -167,9 +167,9 @@ client.on('message', msg => {
 	    break;
 
 	    case 'activeQueues': // For use in identifying when matinenece is safe
-		var num=0;
+		let num=0;
 
-		for(x in QueueTable)
+		for(let x in QueueTable)
 			if(QueueTable[x]!=undefined)
 				num++;
 
