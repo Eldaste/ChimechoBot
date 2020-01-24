@@ -1,16 +1,21 @@
+// Import required libraries
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const botMethods= require('./togemethods.js');
+
+// Import required tables (authentication, blacklist, definition table)
 const auth = require('./auth.json');
 const blackfile = require('./blacklist.json');
-const modNameFile = require('./definitions.json');
-const prefix='.'
-const defaultNum=3;
-const defaultDuplication=false;
+const definitionsFile = require('./definitions.json');
 
-
-var QueueTable={};
+// Set up client
+const client = new Discord.Client();
 var channelBlacklist=blackfile.blacklisted;
-var modRoles=modNameFile.modNames;
+
+// Set up defaults
+const prefix='.'
+
+// Set up blank QueueTable
+var QueueTable={};
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -19,106 +24,101 @@ client.on('ready', () => {
 
 client.on('message', msg => {
 
-    if (channelBlacklist.indexOf(msg.channel.id) != -1)
+    // Escape if channel is in the blacklist or it is a message of the bot
+    if (channelBlacklist.indexOf(msg.channel.id) != -1 || msg.author == client.user)
 	return;
 
-    var message=msg.content;
+    // Extract content for easier manipulation
+    let message=msg.content;
 
+    // Check if command for the bot
     if (message.startsWith(prefix)) {
+
+	// Remove command indicatior prefix and split into args and command
         var args = message.substring(prefix.length).split(' ');
         var cmd = args[0];
-
-
 	args = args.splice(1);
 
-
-	//console.log("Command "+cmd)
-        //console.log("Args "+args)
-
+	// Parse Command
 	switch(cmd) {
 
-	    case 'createQ':
-		if(QueueTable[msg.channel]!=undefined){
+	    case 'createQ': // Creates a Queue in the given channel if one does not exist already
+
+		if(botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("This channel has an active Queue.");
 			break;
 		}
-		QueueTable[msg.channel]={queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, open:true}
+		QueueTable[msg.channel]=botMethods.queueBase(msg);
 		msg.reply("Queue created.");
 
 	    break;
 
-	    case 'deleteQ':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'deleteQ': // Removes the Queue if sent by the Queue owner
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
-		if(QueueTable[msg.channel].owner!=msg.author){
+		if(!botMethods.isOwner(msg, QueueTable)){
 			msg.reply("Invalid Permissions.");
 			break;
 		}
+
+		QueueTable[msg.channel]=undefined;
+		msg.reply("Queue cleared.");
+
+	    break;
+
+
+	    case 'modDelete': // Removes the Queue if sent by the Queue owner
+			      // Intended to clear channels left locked by absent owners
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}		
+		if(!botMethods.isMod(msg, definitionsFile.modNames)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+
 		QueueTable[msg.channel]=undefined;
 		msg.reply("Queue cleared.");
 	    break;
 
-
-	    case 'modDelete':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'closeQ': // Closes Queue to further joins and deletes the Queue if empty
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
-		var roleList = msg.guild.roles.array();
-		var allowedRole=undefined;
-		
-		for(x in roleList){
-			if(modRoles.indexOf(roleList[x].name)!=-1){
-				allowedRole=roleList[x];
-				break;
-			}
-		}
-		
-		if(undefined==allowedRole||!msg.member.roles.has(allowedRole.id)){
+		if(!botMethods.isOwner(msg, QueueTable)){
 			msg.reply("Invalid Permissions.");
 			break;
 		}
-		QueueTable[msg.channel]=undefined;
-		msg.reply("Queue cleared.");
-	    break;
 
-	    case 'closeQ':
-		if(QueueTable[msg.channel]==undefined){
-			msg.reply("No active Queue.");
-			break;
-		}
-		if(QueueTable[msg.channel].owner!=msg.author){
-			msg.reply("Invalid Permissions.");
-			break;
-		}
 		QueueTable[msg.channel].open=false;
+
 		msg.channel.send("Queue closed, no further joins allowed.");
-		if(0==QueueTable[msg.channel].queued.length){
-			msg.author.send("Queue cleared.");
-			msg.channel.send("Queue cleared.");
-			QueueTable[msg.channel]=undefined;
-		}
+
+		botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
 
 
-	    case 'openQ':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'openQ': // Reopens Queue to further joins if it exists
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
-		if(QueueTable[msg.channel].owner!=msg.author){
+		if(!botMethods.isOwner(msg, QueueTable)){
 			msg.reply("Invalid Permissions.");
 			break;
 		}
+
 		QueueTable[msg.channel].open=true;
 		msg.channel.send("Queue reopened, joins allowed.");
 	    break;
 
 
-	    case 'join':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'join': // Joins the Queue. Checks to prvent duplications if dupes is false
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
@@ -126,45 +126,36 @@ client.on('message', msg => {
 			msg.reply("Queue closed.");
 			break;
 		}
-		var joinable=true;
 
-		if(!QueueTable[msg.channel].dupes)
-			for(x of QueueTable[msg.channel].queued)
-				if(x==msg.author){
-					msg.reply("You are already Queued");
-					joinable=false;
-				}
-
-		if(joinable) QueueTable[msg.channel].queued.push(msg.author);
+		if(!QueueTable[msg.channel].dupes && botMethods.isEnqueued(msg, QueueTable))
+			msg.reply("You are already Queued");
+		else
+			QueueTable[msg.channel].queued.push(msg.author);
 	    break;
 
-	    case 'leave':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'leave': // Leaves the Queue. Only removes first instance of the user
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
-		found=false;
 
-		if(!QueueTable[msg.channel].dupes)
-			for(x=0;x<QueueTable[msg.channel].queued.length && !found;x++)
-				if(QueueTable[msg.channel].queued[x]==msg.author){
-					QueueTable[msg.channel].queued.splice(x,1);
-					msg.reply("You have been removed.");
-					found=true;
-				}
-		if(!QueueTable[msg.channel].open&&0==QueueTable[msg.channel].queued.length){
-			msg.author.send("Queue cleared.");
-			msg.channel.send("Queue cleared.");
-			QueueTable[msg.channel]=undefined;
+		let x=botMethods.findUser(msg, QueueTable);
+
+		if(x!=-1){
+			QueueTable[msg.channel].queued.splice(x,1);
+			msg.reply("You have been removed.");
 		}
+		
+		if(!QueueTable[msg.channel].open)
+			botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
 
-	    case 'viewQ':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'viewQ': // Sends Queue owner a list of evryone in the Queue 
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
-		if(QueueTable[msg.channel].owner!=msg.author){
+		if(!botMethods.isOwner(msg, QueueTable)){
 			msg.reply("Invalid Permissions.");
 			break;
 		}
@@ -175,7 +166,7 @@ client.on('message', msg => {
 		msg.author.send(QueueTable[msg.channel].queued);
 	    break;
 
-	    case 'activeQueues':
+	    case 'activeQueues': // For use in identifying when matinenece is safe
 		var num=0;
 
 		for(x in QueueTable)
@@ -185,12 +176,12 @@ client.on('message', msg => {
 		console.log(num);
 	    break;
 
-	    case 'next':
-		if(QueueTable[msg.channel]==undefined){
+	    case 'next': // Sends the next set of users a random code.
+		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
 		}
-		if(QueueTable[msg.channel].owner!=msg.author){
+		if(!botMethods.isOwner(msg, QueueTable)){
 			msg.reply("Invalid Permissions.");
 			break;
 		}
@@ -198,35 +189,31 @@ client.on('message', msg => {
 			msg.reply("Queue is empty.");
 			break;
 		}
-		var coderaw=Math.floor(Math.random() * 10000);
-		var total=0;
-
-		var code=""+coderaw;
-
-		if(coderaw<1) code="0"+code;
-		if(coderaw<10) code="0"+code;
-		if(coderaw<100) code="0"+code;
-		if(coderaw<1000) code="0"+code;
-
+		
+		let total=0;
+		let code=botMethods.randomCode();
 
 		for(var i=0;i<QueueTable[msg.channel].size;i++){
-			var user=QueueTable[msg.channel].queued.shift();
-			total+=1;
+			// Get a user 
+			let user=QueueTable[msg.channel].queued.shift();
+			total++;
+
+			// If no users remain in the Queue, force a loop break
 			if(QueueTable[msg.channel].queued.length==0){
 				i=QueueTable[msg.channel].size;
 			}
+
 			user.send("Your join code is "+code+".")
 		}
 
+		// Alert Queue owner to the code and how many to expect
 		if(total == 1) msg.author.send("The code is "+code+". "+total+" user is joining.");
 		else msg.author.send("The code is "+code+". "+total+" users are joining.");
-		if(!QueueTable[msg.channel].open&&total<QueueTable[msg.channel].size){
-			msg.author.send("Queue cleared.");
-			msg.channel.send("Queue cleared.");
-			QueueTable[msg.channel]=undefined;
-		}
+
+		if(!QueueTable[msg.channel].open)
+			botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
-         }
+         } // End Switch
      }
 });
 
