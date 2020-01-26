@@ -1,6 +1,6 @@
 // Import required libraries
 const Discord = require('discord.js');
-const botMethods= require('./togemethods.js');
+const botMethods= require('./chimethods.js');
 
 // Import required tables (authentication, blacklist, definition table)
 const auth = require('./auth.json');
@@ -137,7 +137,7 @@ client.on('message', msg => {
 			QueueTable[msg.channel].queued.push(msg.author);
 			
 			if(botMethods.isFilled(msg, QueueTable))
-				msg.reply("Queue filled.");
+				msg.channel.send("Queue filled.");
 		}
 	    break;
 
@@ -245,7 +245,7 @@ client.on('message', msg => {
 			break;
 		}
 		if(args.length == 0){
-			msg.reply("What would like to configure? Configuration is on the form "+prefix+"configureQ <mode> <options>");
+			msg.reply("What would like to configure? Configuration is of the form "+prefix+"configureQ <mode> <options>");
 			break;
 		}
 
@@ -260,7 +260,7 @@ client.on('message', msg => {
 
 				QueueTable[msg.channel].maxplayers=args[1]*QueueTable[msg.channel].size;
 
-				msg.reply("The number of lobbies as been set to "+args[1]+".");
+				msg.reply("The number of lobbies has been set to "+args[1]+".");
 			break;
 
 			case 'openlobby': // Remove maximum number of lobbies
@@ -282,7 +282,7 @@ client.on('message', msg => {
 
 				QueueTable[msg.channel].size=args[1];
 
-				msg.reply("The number of lobbies as been set to "+args[1]+".");
+				msg.reply("The number of people per lobby has been set to "+args[1]+".");
 			break;
 	
 		} // End configure switch
