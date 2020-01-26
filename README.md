@@ -22,6 +22,10 @@ Commands:
 
 .activeQueues - For use by the one running the bot itself to ID the number of giveaways (to find safe times for matinance).
 
+.configureQ - Configure various options about the Queue. Requires arguments.
+   - lobbysize <number> - Changes number of people per lobby.
+   - lobbies <number> - Set a max number of lobbies. Automatically closes queue when last lobby is filled and clears queue when last lobby is called via next.
+   - openlobby - Removes the max lobby restriction set by lobbies.
 
 
 Bot can be tried out here https://discord.gg/44j5GBg
@@ -50,5 +54,4 @@ Ability for Mods to lock certian option configurations on a per-server basis
 Configuration options:
   - Max number of attempts
   - Allow users to add themselevs multiple times in a single Queue
-  - Change Room size
   - Unique user tracking on/off 
