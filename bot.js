@@ -12,10 +12,13 @@ const client = new Discord.Client();
 var channelBlacklist=blackfile.blacklisted;
 
 // Set up defaults
-const prefix='.'
+const prefix='.';
 
-// Set up blank QueueTable
+// Set up blank QueueTable. The QueueTable holds the active Queues and all information needed to run them (all settings and the like).
 var QueueTable={};
+
+// Set up blank DMTable. The DMTable is used for anything that involves any DM functionallity.
+var DMTable={};
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -31,17 +34,37 @@ client.on('message', msg => {
     // Extract content for easier manipulation
     let message=msg.content;
 
+    // Handle DMs
+    if (msg.channel.type == "dm"){
+	
+	// If user isn't expected, ignore the message
+	if(DMTable[msg.author]==undefined)
+		return;
+
+	// Handle in-DM commands
+	let args = message.split(' ');
+        let cmd = args[0];
+
+	switch(cmd) {
+		case 'next':
+		case '.next': // Call a new group on the Queue that was just sent.
+			botMethods.createGroup(msg, QueueTable, DMTable, true);
+	} // End Switch
+
+	return;
+    }
+
     // Check if command for the bot
     if (message.startsWith(prefix)) {
 
 	// Remove command indicatior prefix and split into args and command
-        var args = message.substring(prefix.length).split(' ');
-        var cmd = args[0];
+        let args = message.substring(prefix.length).split(' ');
+        let cmd = args[0];
 	args = args.splice(1);
 
 	// Parse Command
 	switch(cmd) {
-
+case 'ring':
 	    case 'createQ': // Creates a Queue in the given channel if one does not exist already
 
 		if(botMethods.hasQueue(msg, QueueTable)){
@@ -98,7 +121,7 @@ client.on('message', msg => {
 
 		msg.channel.send("Queue closed, no further joins allowed.");
 
-		botMethods.clearIfEmpty(msg, QueueTable);
+		botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
 
@@ -159,7 +182,7 @@ client.on('message', msg => {
 			msg.channel.send("A spot has opened! Join while you can.");
 		
 		if(!QueueTable[msg.channel].open)
-			botMethods.clearIfEmpty(msg, QueueTable);
+			botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
 	    case 'viewQ': // Sends Queue owner a list of evryone in the Queue 
@@ -197,42 +220,9 @@ client.on('message', msg => {
 			msg.reply("Invalid Permissions.");
 			break;
 		}
-		if(QueueTable[msg.channel].queued.length==0){
-			msg.reply("Queue is empty.");
-			break;
-		}
 		
-		let total=0;
-		let code=botMethods.randomCode();
+		botMethods.createGroup(msg, QueueTable, DMTable, false);
 
-		for(var i=0;i<QueueTable[msg.channel].size;i++){
-			// Get a user 
-			let user=QueueTable[msg.channel].queued.shift();
-
-			user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => message.channel.send('Unable to alert a player of the code.'));
-
-			total++;
-
-			// If no users remain in the Queue, force a loop break
-			if(QueueTable[msg.channel].queued.length==0){
-				i=QueueTable[msg.channel].size;
-			}
-		}
-
-		// Alert Queue owner to the code and how many to expect
-		if(total == 1) msg.author.send("The code is "+code+". "+total+" user is joining.");
-		else msg.author.send("The code is "+code+". "+total+" users are joining.");
-
-		// If there is a max player limit, modify it to account for a lobby passing.
-		if(QueueTable[msg.channel].maxplayers != -1){
-			QueueTable[msg.channel].maxplayers=QueueTable[msg.channel].maxplayers-QueueTable[msg.channel].size;
-			
-			if(QueueTable[msg.channel].maxplayers<0)
-				QueueTable[msg.channel].maxplayers=0; 
-		}
-
-		if(!QueueTable[msg.channel].open || QueueTable[msg.channel].maxplayers == 0)
-			botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
 
 	    case 'configureQ': // For use in changing settings
