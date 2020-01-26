@@ -10,7 +10,8 @@ exports.hasQueue = function (msg, table){
 // Creates a QueueTable entry with all fields set to the universal defaults
 // and 'owner' set to the message sender
 exports.queueBase = function (msg){
-	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, open:true};
+	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, 
+		open:true, maxplayers:-1};
 }
 
 // Returns true iff the user is the owner of a given channel's Queue
@@ -77,3 +78,13 @@ exports.randomCode = function (){
 
 	return code;
 }
+
+// Returns true if the Queue is in restricted mode and all spots are accounted for.
+exports.isFilled = function (msg, table){
+	
+	if(table[msg].maxplayers == -1)
+		return false;
+
+	return table[msg.channel].queued.length >= table[msg.channel].maxplayers;
+
+} 
