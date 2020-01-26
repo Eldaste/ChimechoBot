@@ -10,7 +10,8 @@ exports.hasQueue = function (msg, table){
 // Creates a QueueTable entry with all fields set to the universal defaults
 // and 'owner' set to the message sender
 exports.queueBase = function (msg){
-	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, open:true};
+	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, 
+		open:true, maxplayers:-1};
 }
 
 // Returns true iff the user is the owner of a given channel's Queue
@@ -23,7 +24,7 @@ exports.isMod = function (msg, modNames){
 
 	let roleList = msg.guild.roles.array();
 		
-	for(x in roleList)
+	for(let x in roleList)
 		if(modNames.indexOf(roleList[x].name)!=-1)
 			if (msg.member.roles.has(roleList[x].id))
 				return true;
@@ -45,7 +46,7 @@ exports.clearIfEmpty = function (msg, table){
 // Returns true if the message autor is in the Queue
 exports.isEnqueued = function (msg, table){
 
-	for(x of table[msg.channel].queued)
+	for(let x of table[msg.channel].queued)
 		if(x==msg.author)
 			return true;
 
@@ -55,7 +56,7 @@ exports.isEnqueued = function (msg, table){
 // Finds the first instance of the author if the message in the Queue. Returns -1 if not found
 exports.findUser = function (msg, table){
 	
-	for(x=0; x<table[msg.channel].queued.length;x++)
+	for(let x=0; x<table[msg.channel].queued.length;x++)
 		if(table[msg.channel].queued[x]==msg.author)
 			return x;	
 
@@ -77,3 +78,13 @@ exports.randomCode = function (){
 
 	return code;
 }
+
+// Returns true if the Queue is in restricted mode and all spots are accounted for.
+exports.isFilled = function (msg, table){
+	
+	if(table[msg].maxplayers == -1)
+		return false;
+
+	return table[msg.channel].queued.length >= table[msg.channel].maxplayers;
+
+} 

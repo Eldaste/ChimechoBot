@@ -126,11 +126,19 @@ client.on('message', msg => {
 			msg.reply("Queue closed.");
 			break;
 		}
+		if(botMethods.isFilled(msg, QueueTable)){
+			msg.reply("Queue filled. Wait to see if a user leaves.");
+			break;
+		}
 
 		if(!QueueTable[msg.channel].dupes && botMethods.isEnqueued(msg, QueueTable))
 			msg.reply("You are already Queued");
-		else
+		else{
 			QueueTable[msg.channel].queued.push(msg.author);
+			
+			if(botMethods.isFilled(msg, QueueTable))
+				msg.reply("Queue filled.");
+		}
 	    break;
 
 	    case 'leave': // Leaves the Queue. Only removes first instance of the user
@@ -140,11 +148,15 @@ client.on('message', msg => {
 		}
 
 		let x=botMethods.findUser(msg, QueueTable);
+		let ispastfil=botMethods.isFilled(msg, QueueTable);
 
 		if(x!=-1){
 			QueueTable[msg.channel].queued.splice(x,1);
 			msg.reply("You have been removed.");
 		}
+
+		if(ispastfil && !botMethods.isFilled(msg, QueueTable))
+			msg.channel.send("A spot has opened! Join while you can.");
 		
 		if(!QueueTable[msg.channel].open)
 			botMethods.clearIfEmpty(msg, QueueTable);
@@ -196,23 +208,87 @@ client.on('message', msg => {
 		for(var i=0;i<QueueTable[msg.channel].size;i++){
 			// Get a user 
 			let user=QueueTable[msg.channel].queued.shift();
+
+			user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => message.channel.send('Unable to alert a player of the code.'));
+
 			total++;
 
 			// If no users remain in the Queue, force a loop break
 			if(QueueTable[msg.channel].queued.length==0){
 				i=QueueTable[msg.channel].size;
 			}
-
-			user.send("Your join code is "+code+".")
 		}
 
 		// Alert Queue owner to the code and how many to expect
 		if(total == 1) msg.author.send("The code is "+code+". "+total+" user is joining.");
 		else msg.author.send("The code is "+code+". "+total+" users are joining.");
 
-		if(!QueueTable[msg.channel].open)
+		// If there is a max player limit, modify it to account for a lobby passing.
+		if(QueueTable[msg.channel].maxplayers != -1){
+			QueueTable[msg.channel].maxplayers=QueueTable[msg.channel].maxplayers-QueueTable[msg.channel].size;
+			
+			if(QueueTable[msg.channel].maxplayers<0)
+				QueueTable[msg.channel].maxplayers=0; 
+		}
+
+		if(!QueueTable[msg.channel].open || QueueTable[msg.channel].maxplayers == 0)
 			botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
+
+	    case 'configureQ': // For use in changing settings
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(args.length == 0){
+			msg.reply("What would like to configure? Configuration is on the form "+prefix+"configureQ <mode> <options>");
+			break;
+		}
+
+		switch(args[0]) {
+			
+			case 'lobbies': // Maximum number of lobbies
+
+				if(args.length == 1 || isNaN(args[1])){
+					msg.reply("Configuring the max number of lobbies requires a number to be passed as the option.");
+					break;
+				}
+
+				QueueTable[msg.channel].maxplayers=args[1]*QueueTable[msg.channel].size;
+
+				msg.reply("The number of lobbies as been set to "+args[1]+".");
+			break;
+
+			case 'openlobby': // Remove maximum number of lobbies
+
+				QueueTable[msg.channel].maxplayers=-1;
+
+				msg.reply("The number of lobbies has been unrestricted.");
+			break;
+
+			case 'lobbysize': // Number of people in a lobby
+
+				if(args.length == 1 || isNaN(args[1])){
+					msg.reply("Configuring the size of a lobby requires a number to be passed as the option.");
+					break;
+				}
+
+				if(QueueTable[msg.channel].maxplayers!=-1)
+					QueueTable[msg.channel].maxplayers=QueueTable[msg.channel].maxplayers*args[1]/QueueTable[msg.channel].size;
+
+				QueueTable[msg.channel].size=args[1];
+
+				msg.reply("The number of lobbies as been set to "+args[1]+".");
+			break;
+	
+		} // End configure switch
+
+	    break;
+
          } // End Switch
      }
 });
