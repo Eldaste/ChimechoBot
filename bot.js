@@ -61,6 +61,10 @@ client.on('message', msg => {
 	return;
     }
 
+//testing whitelist only on this branch is this code included
+    if (msg.channel.id != 646049007998730290 && msg.channel.id != 668360850750308358)
+	return;
+
     // Check if command for the bot
     if (message.startsWith(prefix)) {
 
