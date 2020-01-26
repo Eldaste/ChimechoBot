@@ -23,7 +23,7 @@ exports.isMod = function (msg, modNames){
 
 	let roleList = msg.guild.roles.array();
 		
-	for(x in roleList)
+	for(let x in roleList)
 		if(modNames.indexOf(roleList[x].name)!=-1)
 			if (msg.member.roles.has(roleList[x].id))
 				return true;
@@ -45,7 +45,7 @@ exports.clearIfEmpty = function (msg, table){
 // Returns true if the message autor is in the Queue
 exports.isEnqueued = function (msg, table){
 
-	for(x of table[msg.channel].queued)
+	for(let x of table[msg.channel].queued)
 		if(x==msg.author)
 			return true;
 
@@ -55,7 +55,7 @@ exports.isEnqueued = function (msg, table){
 // Finds the first instance of the author if the message in the Queue. Returns -1 if not found
 exports.findUser = function (msg, table){
 	
-	for(x=0; x<table[msg.channel].queued.length;x++)
+	for(let x=0; x<table[msg.channel].queued.length;x++)
 		if(table[msg.channel].queued[x]==msg.author)
 			return x;	
 

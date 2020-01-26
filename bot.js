@@ -27,6 +27,9 @@ client.on('message', msg => {
     // Escape if channel is in the blacklist or it is a message of the bot
     if (channelBlacklist.indexOf(msg.channel.id) != -1 || msg.author == client.user)
 	return;
+//testing whitelist
+    if (msg.channel.id != 646049007998730290 && msg.channel.id != 668360850750308358)
+	return;
 
     // Extract content for easier manipulation
     let message=msg.content;
@@ -196,14 +199,15 @@ client.on('message', msg => {
 		for(var i=0;i<QueueTable[msg.channel].size;i++){
 			// Get a user 
 			let user=QueueTable[msg.channel].queued.shift();
+
+			user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => message.channel.send('Unable to alert a player of the code.'));
+
 			total++;
 
 			// If no users remain in the Queue, force a loop break
 			if(QueueTable[msg.channel].queued.length==0){
 				i=QueueTable[msg.channel].size;
 			}
-
-			user.send("Your join code is "+code+".")
 		}
 
 		// Alert Queue owner to the code and how many to expect
@@ -213,6 +217,8 @@ client.on('message', msg => {
 		if(!QueueTable[msg.channel].open)
 			botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
+
+	    //case '': // Sends 
          } // End Switch
      }
 });
