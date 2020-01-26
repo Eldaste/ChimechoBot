@@ -169,3 +169,50 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 		if(this.clearIfEmpty(msg, table, chn))
 			dmtable[msg.author] = undefined;
 }
+
+// Add another member of the queue to the current group. Only usable after a next.
+exports.addMember = function (msg, table, dmtable, fromdm){
+
+	let chn;
+
+	// Make sure there's a group
+	if(dmtable[msg.author] == undefined){
+		msg.reply("No active group. Use .next to form a group.");
+		return;
+	}
+
+	// Set the queue to look at
+	if(fromdm){
+		// Peform a check that the use owns the Queue. Not needed for non-DM.
+		// This is also how the dmtable clears itself other than .close
+		if (table[dmtable[msg.author].queue] == undefined || msg.author != table[dmtable[msg.author].queue].owner){
+			msg.reply("Unable to add a member. Try again from the Queue thread.");
+			dmtable[msg.author]=undefined;
+			return;
+		}
+
+		chn=dmtable[msg.author].queue;
+	}
+	else{
+		chn=msg.channel;
+	}
+
+	// Make sure there's someone to join
+	if(table[chn].queued.length==0){
+		msg.reply("Queue is empty.");
+		return;
+	}
+
+	let code=dmtable[msg.author].lastcode;
+
+	// Get a user 
+	let user=table[chn].queued.shift();
+
+	user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
+
+	msg.author.send("The next in queue has been sent a code.");
+
+	if(!table[chn].open || table[chn].maxplayers == 0)
+		if(this.clearIfEmpty(msg, table, chn))
+			dmtable[msg.author] = undefined;
+}

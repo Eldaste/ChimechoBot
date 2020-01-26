@@ -16,7 +16,9 @@ Commands:
 
 .viewQ - Sends the Queue owner (the one that created it) a list of who is in the queue.
 
-.next - Sends the owner and the next 3 people in the Queue (random) codes to connect with.
+.next - Sends the owner and the next 3 people in the Queue (random) codes to connect with. Usable from DM after the first .next.
+
+.add - Sends the next in Queue the same code as the last group. Command usable from DM.
 
 .leave - Removes self from the Queue.
 
@@ -44,8 +46,6 @@ Run 'node bot.js'
 
 
 Upcoming: 
-
-Ability to use the "next" command from DM if you have an open Queue
 
 Ability to track how many unique users join a given raid Queue
 

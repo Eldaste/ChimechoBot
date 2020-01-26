@@ -49,6 +49,13 @@ client.on('message', msg => {
 		case 'next':
 		case '.next': // Call a new group on the Queue that was just sent.
 			botMethods.createGroup(msg, QueueTable, DMTable, true);
+			break;
+
+		case 'add':
+		case '.add': // Add a member to the last group on the Queue that was just sent.
+			botMethods.addMember(msg, QueueTable, DMTable, true);
+		break;
+
 	} // End Switch
 
 	return;
@@ -222,6 +229,24 @@ case 'ring':
 		}
 		
 		botMethods.createGroup(msg, QueueTable, DMTable, false);
+
+	    break;
+
+	    case 'add': // Sends the next user the same code that the last group had.
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(DMTable[msg.author].queue!=msg.channel){
+			msg.reply("Your last group was in a different channel. Please use .next to make one in this channel.");
+			break;
+		}
+		
+		botMethods.addMember(msg, QueueTable, DMTable, false);
 
 	    break;
 
