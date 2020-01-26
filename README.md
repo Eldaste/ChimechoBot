@@ -16,12 +16,18 @@ Commands:
 
 .viewQ - Sends the Queue owner (the one that created it) a list of who is in the queue.
 
-.next - Sends the owner and the next 3 people in the Queue (random) codes to connect with.
+.next - Sends the owner and the next 3 people in the Queue (random) codes to connect with. Usable from DM after the first .next.
+
+.add - Sends the next in Queue the same code as the last group. Command usable from DM.
 
 .leave - Removes self from the Queue.
 
 .activeQueues - For use by the one running the bot itself to ID the number of giveaways (to find safe times for matinance).
 
+.configureQ - Configure various options about the Queue. Requires arguments.
+   - lobbysize <number> - Changes number of people per lobby.
+   - lobbies <number> - Set a max number of lobbies. Automatically closes queue when last lobby is filled and clears queue when last lobby is called via next.
+   - openlobby - Removes the max lobby restriction set by lobbies.
 
 
 Bot can be tried out here https://discord.gg/44j5GBg
@@ -41,8 +47,6 @@ Run 'node bot.js'
 
 Upcoming: 
 
-Ability to use the "next" command from DM if you have an open Queue
-
 Ability to track how many unique users join a given raid Queue
 
 Ability for Mods to lock certian option configurations on a per-server basis
@@ -50,5 +54,4 @@ Ability for Mods to lock certian option configurations on a per-server basis
 Configuration options:
   - Max number of attempts
   - Allow users to add themselevs multiple times in a single Queue
-  - Change Room size
   - Unique user tracking on/off 

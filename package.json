@@ -1,6 +1,6 @@
 {
- "name": "togebot",
- "version": "1.0.0",
+ "name": "chimechobot",
+ "version": "2.1.0",
  "description": "Bot for organizing Pokemon Max Raids",
  "main": "bot.js",
  "scripts": {

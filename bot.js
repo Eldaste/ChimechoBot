@@ -1,6 +1,6 @@
 // Import required libraries
 const Discord = require('discord.js');
-const botMethods= require('./togemethods.js');
+const botMethods= require('./chimethods.js');
 
 // Import required tables (authentication, blacklist, definition table)
 const auth = require('./auth.json');
@@ -12,10 +12,13 @@ const client = new Discord.Client();
 var channelBlacklist=blackfile.blacklisted;
 
 // Set up defaults
-const prefix='.'
+const prefix='.';
 
-// Set up blank QueueTable
+// Set up blank QueueTable. The QueueTable holds the active Queues and all information needed to run them (all settings and the like).
 var QueueTable={};
+
+// Set up blank DMTable. The DMTable is used for anything that involves any DM functionallity.
+var DMTable={};
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -27,24 +30,48 @@ client.on('message', msg => {
     // Escape if channel is in the blacklist or it is a message of the bot
     if (channelBlacklist.indexOf(msg.channel.id) != -1 || msg.author == client.user)
 	return;
-//testing whitelist
-    if (msg.channel.id != 646049007998730290 && msg.channel.id != 668360850750308358)
-	return;
 
     // Extract content for easier manipulation
     let message=msg.content;
+
+    // Handle DMs
+    if (msg.channel.type == "dm"){
+	
+	// If user isn't expected, ignore the message
+	if(DMTable[msg.author]==undefined)
+		return;
+
+	// Handle in-DM commands
+	let args = message.split(' ');
+        let cmd = args[0];
+
+	switch(cmd) {
+		case 'next':
+		case '.next': // Call a new group on the Queue that was just sent.
+			botMethods.createGroup(msg, QueueTable, DMTable, true);
+			break;
+
+		case 'add':
+		case '.add': // Add a member to the last group on the Queue that was just sent.
+			botMethods.addMember(msg, QueueTable, DMTable, true);
+		break;
+
+	} // End Switch
+
+	return;
+    }
 
     // Check if command for the bot
     if (message.startsWith(prefix)) {
 
 	// Remove command indicatior prefix and split into args and command
-        var args = message.substring(prefix.length).split(' ');
-        var cmd = args[0];
+        let args = message.substring(prefix.length).split(' ');
+        let cmd = args[0];
 	args = args.splice(1);
 
 	// Parse Command
 	switch(cmd) {
-
+case 'ring':
 	    case 'createQ': // Creates a Queue in the given channel if one does not exist already
 
 		if(botMethods.hasQueue(msg, QueueTable)){
@@ -101,7 +128,7 @@ client.on('message', msg => {
 
 		msg.channel.send("Queue closed, no further joins allowed.");
 
-		botMethods.clearIfEmpty(msg, QueueTable);
+		botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
 
@@ -129,11 +156,19 @@ client.on('message', msg => {
 			msg.reply("Queue closed.");
 			break;
 		}
+		if(botMethods.isFilled(msg, QueueTable)){
+			msg.reply("Queue filled. Wait to see if a user leaves.");
+			break;
+		}
 
 		if(!QueueTable[msg.channel].dupes && botMethods.isEnqueued(msg, QueueTable))
 			msg.reply("You are already Queued");
-		else
+		else{
 			QueueTable[msg.channel].queued.push(msg.author);
+			
+			if(botMethods.isFilled(msg, QueueTable))
+				msg.channel.send("Queue filled.");
+		}
 	    break;
 
 	    case 'leave': // Leaves the Queue. Only removes first instance of the user
@@ -143,14 +178,18 @@ client.on('message', msg => {
 		}
 
 		let x=botMethods.findUser(msg, QueueTable);
+		let ispastfil=botMethods.isFilled(msg, QueueTable);
 
 		if(x!=-1){
 			QueueTable[msg.channel].queued.splice(x,1);
 			msg.reply("You have been removed.");
 		}
+
+		if(ispastfil && !botMethods.isFilled(msg, QueueTable))
+			msg.channel.send("A spot has opened! Join while you can.");
 		
 		if(!QueueTable[msg.channel].open)
-			botMethods.clearIfEmpty(msg, QueueTable);
+			botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
 	    case 'viewQ': // Sends Queue owner a list of evryone in the Queue 
@@ -188,37 +227,83 @@ client.on('message', msg => {
 			msg.reply("Invalid Permissions.");
 			break;
 		}
-		if(QueueTable[msg.channel].queued.length==0){
-			msg.reply("Queue is empty.");
+		
+		botMethods.createGroup(msg, QueueTable, DMTable, false);
+
+	    break;
+
+	    case 'add': // Sends the next user the same code that the last group had.
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(DMTable[msg.author].queue!=msg.channel){
+			msg.reply("Your last group was in a different channel. Please use .next to make one in this channel.");
 			break;
 		}
 		
-		let total=0;
-		let code=botMethods.randomCode();
+		botMethods.addMember(msg, QueueTable, DMTable, false);
 
-		for(var i=0;i<QueueTable[msg.channel].size;i++){
-			// Get a user 
-			let user=QueueTable[msg.channel].queued.shift();
-
-			user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => message.channel.send('Unable to alert a player of the code.'));
-
-			total++;
-
-			// If no users remain in the Queue, force a loop break
-			if(QueueTable[msg.channel].queued.length==0){
-				i=QueueTable[msg.channel].size;
-			}
-		}
-
-		// Alert Queue owner to the code and how many to expect
-		if(total == 1) msg.author.send("The code is "+code+". "+total+" user is joining.");
-		else msg.author.send("The code is "+code+". "+total+" users are joining.");
-
-		if(!QueueTable[msg.channel].open)
-			botMethods.clearIfEmpty(msg, QueueTable);
 	    break;
 
-	    //case '': // Sends 
+	    case 'configureQ': // For use in changing settings
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(args.length == 0){
+			msg.reply("What would like to configure? Configuration is of the form "+prefix+"configureQ <mode> <options>");
+			break;
+		}
+
+		switch(args[0]) {
+			
+			case 'lobbies': // Maximum number of lobbies
+
+				if(args.length == 1 || isNaN(args[1])){
+					msg.reply("Configuring the max number of lobbies requires a number to be passed as the option.");
+					break;
+				}
+
+				QueueTable[msg.channel].maxplayers=args[1]*QueueTable[msg.channel].size;
+
+				msg.reply("The number of lobbies has been set to "+args[1]+".");
+			break;
+
+			case 'openlobby': // Remove maximum number of lobbies
+
+				QueueTable[msg.channel].maxplayers=-1;
+
+				msg.reply("The number of lobbies has been unrestricted.");
+			break;
+
+			case 'lobbysize': // Number of people in a lobby
+
+				if(args.length == 1 || isNaN(args[1])){
+					msg.reply("Configuring the size of a lobby requires a number to be passed as the option.");
+					break;
+				}
+
+				if(QueueTable[msg.channel].maxplayers!=-1)
+					QueueTable[msg.channel].maxplayers=QueueTable[msg.channel].maxplayers*args[1]/QueueTable[msg.channel].size;
+
+				QueueTable[msg.channel].size=args[1];
+
+				msg.reply("The number of people per lobby has been set to "+args[1]+".");
+			break;
+	
+		} // End configure switch
+
+	    break;
+
          } // End Switch
      }
 });
