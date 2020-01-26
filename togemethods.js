@@ -82,7 +82,7 @@ exports.randomCode = function (){
 // Returns true if the Queue is in restricted mode and all spots are accounted for.
 exports.isFilled = function (msg, table){
 	
-	if(table[msg].maxplayers == -1)
+	if(table[msg.channel].maxplayers == -1)
 		return false;
 
 	return table[msg.channel].queued.length >= table[msg.channel].maxplayers;
