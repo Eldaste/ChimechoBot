@@ -3,7 +3,7 @@ const Discord = require('discord.js');
 const botMethods= require('./chimethods.js');
 
 // Import required tables (authentication, blacklist, definition table)
-const auth = require('./auth.json');
+//const auth = require('./auth.json');
 const blackfile = require('./blacklist.json');
 const definitionsFile = require('./definitions.json');
 
@@ -313,4 +313,4 @@ case 'ring':
 });
 
 
-client.login(auth.token);
+client.login(process.env.BOT_TOKEN)
