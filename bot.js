@@ -313,4 +313,4 @@ case 'ring':
 });
 
 
-client.login('TOKEN');
+client.login(auth.token);
