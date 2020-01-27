@@ -29,6 +29,10 @@ Commands:
    - lobbies <number> - Set a max number of lobbies. Automatically closes queue when last lobby is filled and clears queue when last lobby is called via next.
    - openlobby - Removes the max lobby restriction set by lobbies.
 
+.save - Saves the current configuration on a per user basis.
+
+.ring - Opens a new Queue using the user's saved settings if available
+
 
 Bot can be tried out here https://discord.gg/44j5GBg
 
