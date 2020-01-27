@@ -8,7 +8,7 @@ Commands:
 
 .closeQ - Disallows more users from joining. Deletes Queue when all users have been sent a code.
 
-.modDelete - Forces delete of any Queue regardless of Queue owner. Useable only by those with a role in the modwords file. 
+.modDelete - Forces delete of any Queue regardless of Queue owner. Useable only by those with a role in the modwords of the definitions file. 
 
 .openQ - Reopens Queue after a .closeQ before all users have emptied.
 
@@ -32,6 +32,8 @@ Commands:
 .save - Saves the current configuration on a per user basis.
 
 .ring - Opens a new Queue using the user's saved settings if available
+
+.help - Displays a list of commands. Not all commands are listed. Mod only commands and commands for server matinence are not shown.
 
 
 Bot can be tried out here https://discord.gg/44j5GBg

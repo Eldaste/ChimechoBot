@@ -298,6 +298,12 @@ client.on('message', msg => {
 
 	    break;
 
+	    case 'help': // Displays the help menu with a list of commands usable by the average user.
+
+		msg.channel.send(definitionsFile.helptext);
+
+	    break;
+
 	    case 'configureQ': // For use in changing settings
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
@@ -308,7 +314,7 @@ client.on('message', msg => {
 			break;
 		}
 		if(args.length == 0){
-			msg.reply("What would like to configure? Configuration is of the form "+prefix+"configureQ <mode> <options>");
+			msg.reply("What would like to configure? Configuration is of the form "+prefix+"configureQ <mode> <options>. Use \".configureQ help\" for available options.");
 			break;
 		}
 
@@ -346,6 +352,12 @@ client.on('message', msg => {
 				QueueTable[msg.channel].size=args[1];
 
 				msg.reply("The number of people per lobby has been set to "+args[1]+".");
+			break;
+
+			case 'help': // Displays the help menu with a list of configurations usable by the average user.
+
+				msg.channel.send(definitionsFile.configurehelptext);
+
 			break;
 	
 		} // End configure switch
