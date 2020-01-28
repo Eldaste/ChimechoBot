@@ -20,6 +20,7 @@ const fs = require('fs');
 
 // Set up defaults
 const prefix='.';
+const errorFile="errorfile.log";
 
 // Set up blank QueueTable. The QueueTable holds the active Queues and all information needed to run them (all settings and the like).
 var QueueTable={};
@@ -33,6 +34,7 @@ client.on('ready', () => {
 
 
 client.on('message', msg => {
+  try{
 
     // Escape if channel is in the blacklist or it is a message of the bot
     if (channelBlacklist.indexOf(msg.channel.id) != -1 || msg.author == client.user)
@@ -210,6 +212,23 @@ client.on('message', msg => {
 			botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
+	    case 'numQ': // Displays the user's first spot in the Queue
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+
+		let y=botMethods.findUser(msg, QueueTable);
+
+		if(y==-1){
+			msg.reply("You are not in the Queue.");
+		}
+		else{
+			msg.reply("You are in position "+(y+1)+" of the Queue.");
+		}
+
+	    break;
+
 	    case 'viewQ': // Sends Queue owner a list of evryone in the Queue 
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
@@ -224,6 +243,27 @@ client.on('message', msg => {
 			break;
 		}
 		msg.author.send(QueueTable[msg.channel].queued);
+	    break;
+
+
+	    case 'countQ': // Sends Queue owner how many are in the Queue 
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(QueueTable[msg.channel].queued.length==0){
+			msg.author.send("Queue is empty.");
+			break;
+		}
+		if(QueueTable[msg.channel].queued.length==1){
+			msg.author.send("There is 1 person in the Queue.");
+			break;
+		}
+		msg.author.send("There are "+QueueTable[msg.channel].queued.length+" people in the Queue");
 	    break;
 
 	    case 'activeQueues': // For use in identifying when matinenece is safe
@@ -324,8 +364,8 @@ client.on('message', msg => {
 
 	    break;
 
-	// For use in debugging for easier closing of background processes
-	//    case 'crash':
+	// For use in debugging and testing
+	//   case 'crash':
 	//	throw 'up';
 
 	    case 'configureQ': // For use in changing settings
@@ -389,7 +429,24 @@ client.on('message', msg => {
 	    break;
 
          } // End Switch
-     }
+     } // End if
+  }
+  catch (err){
+
+	let time="";
+		
+	try{time=new Date().toGMTString();}
+	catch(er){}
+
+	let errmess = time+":\n"+err+"|\n\n";
+
+ 	fs.appendFile(errorFile, errmess, (erro) => {
+ 		// If there's a problem writing errors, just silently suffer
+	});
+	
+	try{msg.channel.send("Oh, I don't feel so good.");}
+	catch(er){}
+  }
 });
 
 // Ensure that the filesystem exists for user preferences
