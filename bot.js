@@ -240,7 +240,11 @@ client.on('message', msg => {
 			msg.author.send("Queue is empty.");
 			break;
 		}
-		msg.author.send(QueueTable[msg.channel].queued.length);
+		if(QueueTable[msg.channel].queued.length==1){
+			msg.author.send("There is 1 person in the Queue.");
+			break;
+		}
+		msg.author.send("There are "+QueueTable[msg.channel].queued.length+" people in the Queue");
 	    break;
 
 	    case 'activeQueues': // For use in identifying when matinenece is safe
