@@ -33,7 +33,9 @@ Commands:
 
 .ring - Opens a new Queue using the user's saved settings if available
 
-.help - Displays a list of commands. Not all commands are listed. Mod only commands and commands for server matinence are not shown.
+.help - Displays a list of commands. Not all commands are listed. Mod only commands and commands for server matinence are not shown. Sensitive to if a Queue is up.
+
+.up - DIsplays a message on the channel that the room is up. Usable only via DM.
 
 
 Bot can be tried out here https://discord.gg/44j5GBg
