@@ -180,6 +180,10 @@ client.on('message', msg => {
 			msg.reply("Queue filled. Wait to see if a user leaves.");
 			break;
 		}
+		if(botMethods.checkBan(msg.author.id, QueueTable[msg.channel].banlist)!=-1){
+			msg.reply("You are currently banned from this host's raid queues.");
+			break;
+		}
 
 		if(!QueueTable[msg.channel].dupes && botMethods.isEnqueued(msg, QueueTable))
 			msg.reply("You are already Queued");
@@ -343,6 +347,7 @@ client.on('message', msg => {
 			else
 				replyms+="With no duplicates allowed. ";
 		}
+		if(changed.banlist!=undefined) replyms+="You have "+changed.banlist.length+" users banned. ";
 
 		if(replyms=="")
 			replyms="Ring-a-Ding! "+msg.author+", your queue has been created!";
@@ -361,6 +366,87 @@ client.on('message', msg => {
 			msg.channel.send(definitionsFile.helptextown);
 		else
 			msg.channel.send(definitionsFile.helptextjoiner);
+
+	    break;
+
+	    /*case 'echo': // Debug Command
+		
+		if(args.length == 0){
+			msg.reply("What would like to echo?");
+			break;
+		}
+			msg.channel.send(args[0]);
+
+	    break;*/
+
+	    case 'boot': // Kicks all instances of the user from the Queue
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(args.length == 0){
+			msg.reply("Who would you like to kick? Kicking needs a command of the form "+prefix+"boot <user>.");
+			break;
+		}
+
+		if(botMethods.kickUser(msg, args[0], QueueTable))
+			msg.reply(args[0]+" has been kicked.");
+		else
+			msg.reply(args[0]+" was not in the Queue.");
+
+	    break;
+
+	    case 'ban': // Kicks all instances of the user from the Queue and prevents them from joining. Saved in .save
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(args.length == 0){
+			msg.reply("Who would you like to ban? Banning needs a command of the form "+prefix+"ban <user>.");
+			break;
+		}
+
+		botMethods.kickUser(msg, args[0], QueueTable);
+
+		let userstrip=args[0].replace(/[\\<>@#&!]/g, "");
+		
+		if(botMethods.checkBan(userstrip, QueueTable[msg.channel].banlist)==-1){
+			QueueTable[msg.channel].banlist.push(userstrip);
+			msg.reply(args[0]+" has been banned. Remember to .save to keep your bans.");
+		}
+
+	    break;
+
+	    case 'unban': // Unbans a user
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(args.length == 0){
+			msg.reply("Who would you like to unban? Unbanning needs a command of the form "+prefix+"unban <user>.");
+			break;
+		}
+
+		let xy=botMethods.checkBan(args[0].replace(/[\\<>@#&!]/g, ""), QueueTable[msg.channel].banlist);
+
+		if(xy!=-1){
+			QueueTable[msg.channel].banlist.splice(xy,1);
+			msg.reply(args[0]+" has been unbanned. Remember to .save to keep your bans.");
+		}
+		else
+			msg.reply(args[0]+" was not banned.");
 
 	    break;
 

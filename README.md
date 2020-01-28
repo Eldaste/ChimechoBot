@@ -41,6 +41,12 @@ Commands:
 
 .up - DIsplays a message on the channel that the room is up. Usable only via DM.
 
+.ban <user> - Bans a user
+
+.unban <user> - Unbans a user
+
+.boot <user> - kicks a user from the Queue
+
 
 Bot can be tried out here https://discord.gg/44j5GBg
 
