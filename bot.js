@@ -7,7 +7,7 @@ const botMethods= require('./chimethods.js');
 
 // Import required tables (authentication, blacklist, definition table)
 if(useAuthFile)
-	const auth = require('./auth.json');
+	var auth = require('./auth.json');
 const blackfile = require('./blacklist.json');
 const definitionsFile = require('./definitions.json');
 
@@ -61,6 +61,17 @@ client.on('message', msg => {
 		case 'add':
 		case '.add': // Add a member to the last group on the Queue that was just sent.
 			botMethods.addMember(msg, QueueTable, DMTable, true);
+		break;
+
+		case 'up':
+		case '.up': // Sends a message to the channel that a room is up.
+			if (QueueTable[DMTable[msg.author].queue] == undefined || msg.author != QueueTable[DMTable[msg.author].queue].owner){
+				msg.reply("An error has occured. Manually set up another Queue from the Queue thread.");
+				DMTable[msg.author]=undefined;
+				return;
+			}
+
+			DMTable[msg.author].queue.send("The lobby is up now. Join in if you have a code!");
 		break;
 
 	} // End Switch
@@ -304,7 +315,12 @@ client.on('message', msg => {
 
 	    case 'help': // Displays the help menu with a list of commands usable by the average user.
 
-		msg.channel.send(definitionsFile.helptext);
+		if(!botMethods.hasQueue(msg, QueueTable))
+			msg.channel.send(definitionsFile.helptext);
+		else if(botMethods.isOwner(msg, QueueTable))
+			msg.channel.send(definitionsFile.helptextown);
+		else
+			msg.channel.send(definitionsFile.helptextjoiner);
 
 	    break;
 

@@ -206,7 +206,7 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 		// Get a user 
 		let user=table[chn].queued.shift();
 
-		user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
+		user.send("Your join code is "+code+". The lobby is going up soon. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 
 		total++;
 
