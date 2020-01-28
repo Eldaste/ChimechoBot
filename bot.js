@@ -304,6 +304,10 @@ client.on('message', msg => {
 
 	    break;
 
+	// For use in debugging for easier closing of background processes
+	//    case 'crash':
+	//	throw 'up';
+
 	    case 'configureQ': // For use in changing settings
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
