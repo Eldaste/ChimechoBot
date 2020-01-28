@@ -13,7 +13,7 @@ exports.hasQueue = function (msg, table){
 // and 'owner' set to the message sender
 exports.queueBase = function (msg){
 	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, 
-		open:true, maxplayers:defaultMaxPlayers};
+		open:true, maxplayers:defaultMaxPlayers, banlist:[]};
 }
 
 // Takes a QueueTable entry and creates a SettingsDictionary for it
@@ -29,6 +29,9 @@ exports.getSettings = function (queue){
 	
 	if(queue.maxplayers != defaultMaxPlayers)
 		base.maxplayers=queue.maxplayers;
+	
+	if(queue.banlist.length!=0)
+		base.banlist=queue.banlist;
 
 	return base;
 }
@@ -52,6 +55,11 @@ exports.setSettings = function (queue, settings){
 	if(settings.maxplayers!=undefined && queue.maxplayers != settings.maxplayers){
 		base.maxplayers=settings.maxplayers;
 		queue.maxplayers=settings.maxplayers;
+	}
+
+	if(settings.banlist!=undefined && queue.banlist != settings.banlist){
+		base.banlist=settings.banlist;
+		queue.banlist=settings.banlist;
 	}
 
 	return base;
@@ -89,6 +97,16 @@ exports.isOwner = function (msg, table){
 	return table[msg.channel].owner==msg.author;
 }
 
+// Returns the index of their ban iff the user is banned from a given channel, -1 if not banned.
+exports.checkBan = function (user, banlist){
+
+	for(let x=0; x<banlist.length;x++)
+		if(user==banlist[x])
+			return x;
+
+	return -1;
+}
+
 // Returns true iff the user is a mod of a given channel
 exports.isMod = function (msg, modNames){
 
@@ -117,6 +135,16 @@ exports.clearIfEmpty = function (msg, table, chn){
 	return false;
 }
 
+// Finds the first instance of the author if the message in the Queue. Returns -1 if not found
+exports.findUser = function (msg, table){
+	
+	for(let x=0; x<table[msg.channel].queued.length;x++)
+		if(table[msg.channel].queued[x]==msg.author)
+			return x;	
+
+	return -1;
+}
+
 // Returns true if the message author is in the Queue
 exports.isEnqueued = function (msg, table){
 
@@ -127,11 +155,13 @@ exports.isEnqueued = function (msg, table){
 	return false;
 }
 
-// Finds the first instance of the author if the message in the Queue. Returns -1 if not found
-exports.findUser = function (msg, table){
+// Finds the first instance of the user in the Queue. Returns -1 if not found
+exports.findOtherUser = function (msg, user, table){
+	
+	let strippedID=user.replace(/[\\<>@#&!]/g, "");
 	
 	for(let x=0; x<table[msg.channel].queued.length;x++)
-		if(table[msg.channel].queued[x]==msg.author)
+		if(table[msg.channel].queued[x].id==strippedID)
 			return x;	
 
 	return -1;
@@ -166,6 +196,29 @@ exports.isFilled = function (msg, table){
 // Creates a DMTable entry with all fields set to the provided values
 exports.dmBase = function (chn, code){
 	return {queue:chn, allowed:allowDM, lastcode: code};
+}
+
+// Kicks all instances of the given user. Returns true if at least one user was kicked this way.
+exports.kickUser = function (msg, user, table){
+	
+	let ispastfill=this.isFilled(msg, table);
+	let xx=this.findOtherUser(msg, user, table);
+
+	if(xx==-1)
+		return false;
+
+	while(xx!=-1){
+		table[msg.channel].queued.splice(xx,1);
+		xx=this.findOtherUser(msg, user, table);
+	}
+
+	if(ispastfill && !this.isFilled(msg, table))
+		msg.channel.send("A spot has opened! Join while you can.");
+		
+	if(!table[msg.channel].open)
+		this.clearIfEmpty(msg, table, msg.channel);
+
+	return true;
 }
 
 // Create a group and send messages with a random code to each member of that group.
