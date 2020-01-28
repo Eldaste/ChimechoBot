@@ -181,7 +181,7 @@ client.on('message', msg => {
 			break;
 		}
 		if(botMethods.checkBan(msg.author.id, QueueTable[msg.channel].banlist)!=-1){
-			msg.reply("You are currently banned from this user's raid queues.");
+			msg.reply("You are currently banned from this host's raid queues.");
 			break;
 		}
 
