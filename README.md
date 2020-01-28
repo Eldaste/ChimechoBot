@@ -24,6 +24,8 @@ Commands:
 
 .leave - Removes self from the Queue.
 
+.numQ - Returns position in the Queue.
+
 .activeQueues - For use by the one running the bot itself to ID the number of giveaways (to find safe times for matinance).
 
 .configureQ - Configure various options about the Queue. Requires arguments.

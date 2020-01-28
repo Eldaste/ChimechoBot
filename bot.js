@@ -210,6 +210,23 @@ client.on('message', msg => {
 			botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
+	    case 'numQ': // Displays the user's first spot in the Queue
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+
+		let y=botMethods.findUser(msg, QueueTable);
+
+		if(y==-1){
+			msg.reply("You are not in the Queue.");
+		}
+		else{
+			msg.reply("You are in position "+(y+1)+" of the Queue.");
+		}
+
+	    break;
+
 	    case 'viewQ': // Sends Queue owner a list of evryone in the Queue 
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
