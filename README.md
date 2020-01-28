@@ -16,11 +16,15 @@ Commands:
 
 .viewQ - Sends the Queue owner (the one that created it) a list of who is in the queue.
 
+.countQ - Sends the Queue owner (the one that created it) how many are in the queue.
+
 .next - Sends the owner and the next 3 people in the Queue (random) codes to connect with. Usable from DM after the first .next.
 
 .add - Sends the next in Queue the same code as the last group. Command usable from DM.
 
 .leave - Removes self from the Queue.
+
+.numQ - Returns position in the Queue.
 
 .activeQueues - For use by the one running the bot itself to ID the number of giveaways (to find safe times for matinance).
 
@@ -33,7 +37,9 @@ Commands:
 
 .ring - Opens a new Queue using the user's saved settings if available
 
-.help - Displays a list of commands. Not all commands are listed. Mod only commands and commands for server matinence are not shown.
+.help - Displays a list of commands. Not all commands are listed. Mod only commands and commands for server matinence are not shown. Sensitive to if a Queue is up.
+
+.up - DIsplays a message on the channel that the room is up. Usable only via DM.
 
 
 Bot can be tried out here https://discord.gg/44j5GBg
@@ -56,6 +62,8 @@ Upcoming:
 Ability to track how many unique users join a given raid Queue
 
 Ability for Mods to lock certian option configurations on a per-server basis
+
+.priority - For those that miss their queue
 
 Configuration options:
   - Max number of attempts
