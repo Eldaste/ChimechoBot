@@ -16,6 +16,8 @@ Commands:
 
 .viewQ - Sends the Queue owner (the one that created it) a list of who is in the queue.
 
+.countQ - Sends the Queue owner (the one that created it) how many are in the queue.
+
 .next - Sends the owner and the next 3 people in the Queue (random) codes to connect with. Usable from DM after the first .next.
 
 .add - Sends the next in Queue the same code as the last group. Command usable from DM.
@@ -58,6 +60,8 @@ Upcoming:
 Ability to track how many unique users join a given raid Queue
 
 Ability for Mods to lock certian option configurations on a per-server basis
+
+.priority - For those that miss their queue
 
 Configuration options:
   - Max number of attempts

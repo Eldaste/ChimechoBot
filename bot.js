@@ -226,6 +226,23 @@ client.on('message', msg => {
 		msg.author.send(QueueTable[msg.channel].queued);
 	    break;
 
+
+	    case 'countQ': // Sends Queue owner how many are in the Queue 
+		if(!botMethods.hasQueue(msg, QueueTable)){
+			msg.reply("No active Queue.");
+			break;
+		}
+		if(!botMethods.isOwner(msg, QueueTable)){
+			msg.reply("Invalid Permissions.");
+			break;
+		}
+		if(QueueTable[msg.channel].queued.length==0){
+			msg.author.send("Queue is empty.");
+			break;
+		}
+		msg.author.send(QueueTable[msg.channel].queued.length);
+	    break;
+
 	    case 'activeQueues': // For use in identifying when matinenece is safe
 		let num=0;
 
