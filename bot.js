@@ -1,9 +1,13 @@
+// Set authentication method
+const useAuthFile=true;
+
 // Import required libraries
 const Discord = require('discord.js');
 const botMethods= require('./chimethods.js');
 
 // Import required tables (authentication, blacklist, definition table)
-//const auth = require('./auth.json');
+if(useAuthFile)
+	var auth = require('./auth.json');
 const blackfile = require('./blacklist.json');
 const definitionsFile = require('./definitions.json');
 
@@ -59,14 +63,21 @@ client.on('message', msg => {
 			botMethods.addMember(msg, QueueTable, DMTable, true);
 		break;
 
+		case 'up':
+		case '.up': // Sends a message to the channel that a room is up.
+			if (QueueTable[DMTable[msg.author].queue] == undefined || msg.author != QueueTable[DMTable[msg.author].queue].owner){
+				msg.reply("An error has occured. Manually set up another Queue from the Queue thread.");
+				DMTable[msg.author]=undefined;
+				return;
+			}
+
+			DMTable[msg.author].queue.send("The lobby is up now. Join in if you have a code!");
+		break;
+
 	} // End Switch
 
 	return;
     }
-
-//testing whitelist only on this branch is this code included
-    if (msg.channel.id != 646049007998730290 && msg.channel.id != 668360850750308358)
-	return;
 
     // Check if command for the bot
     if (message.startsWith(prefix)) {
@@ -304,9 +315,18 @@ client.on('message', msg => {
 
 	    case 'help': // Displays the help menu with a list of commands usable by the average user.
 
-		msg.channel.send(definitionsFile.helptext);
+		if(!botMethods.hasQueue(msg, QueueTable))
+			msg.channel.send(definitionsFile.helptext);
+		else if(botMethods.isOwner(msg, QueueTable))
+			msg.channel.send(definitionsFile.helptextown);
+		else
+			msg.channel.send(definitionsFile.helptextjoiner);
 
 	    break;
+
+	// For use in debugging for easier closing of background processes
+	//    case 'crash':
+	//	throw 'up';
 
 	    case 'configureQ': // For use in changing settings
 		if(!botMethods.hasQueue(msg, QueueTable)){
@@ -375,4 +395,7 @@ client.on('message', msg => {
 // Ensure that the filesystem exists for user preferences
 fs.mkdir('./User_Preferences', err => {if (err && err.code != 'EEXIST') throw 'up'});
 
-client.login(process.env.BOT_TOKEN)
+if(useAuthFile)
+	client.login(auth.token);
+else
+	client.login(process.env.BOT_TOKEN);
