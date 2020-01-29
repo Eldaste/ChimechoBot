@@ -22,7 +22,7 @@ const fs = require('fs');
 const prefix='.';
 const errorFile="errorfile.log";
 
-const joinReact="671883056617095179";
+const joinReact="646542193934336000";
 // Relevant reactions:
 //	TestChannel Chime: 671883056617095179
 //	MaxRaid +: 646542193934336000
