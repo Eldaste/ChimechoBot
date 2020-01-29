@@ -32,6 +32,8 @@ Commands:
    - lobbysize <number> - Changes number of people per lobby.
    - lobbies <number> - Set a max number of lobbies. Automatically closes queue when last lobby is filled and clears queue when last lobby is called via next.
    - openlobby - Removes the max lobby restriction set by lobbies.
+   - showusers - Send a list of who joined to Queue owner
+   - hideusers - Do not send a list of who joined to Queue owner
 
 .save - Saves the current configuration on a per user basis.
 
