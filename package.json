@@ -1,6 +1,6 @@
 {
  "name": "chimechobot",
- "version": "3.3.0",
+ "version": "3.4.0",
  "description": "Bot for organizing Pokemon Max Raids",
  "main": "bot.js",
  "scripts": {
