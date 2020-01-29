@@ -225,10 +225,10 @@ client.on('message', msg => {
 		let y=botMethods.findUser(msg, QueueTable);
 
 		if(y==-1){
-			msg.reply("You are not in the Queue.");
+			msg.author.send("You are not in the Queue.");
 		}
 		else{
-			msg.reply("You are in position "+(y+1)+" of the Queue.");
+			msg.author.send("You are in position "+(y+1)+" of the Queue.");
 		}
 
 	    break;
