@@ -12,7 +12,7 @@ Commands:
 
 .openQ - Reopens Queue after a .closeQ before all users have emptied.
 
-.join - Enqueues a user if they aren't in the queue already.
+.join - Enqueues a user if they aren't in the queue already. Will react to the .join so that they know they're in queue.
 
 .viewQ - Sends the Queue owner (the one that created it) a list of who is in the queue.
 
@@ -70,6 +70,8 @@ Ability to track how many unique users join a given raid Queue
 Ability for Mods to lock certian option configurations on a per-server basis
 
 .priority - For those that miss their queue
+
+Ability to do a "rolling update"
 
 Configuration options:
   - Max number of attempts

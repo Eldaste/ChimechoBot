@@ -22,6 +22,11 @@ const fs = require('fs');
 const prefix='.';
 const errorFile="errorfile.log";
 
+const joinReact="671883056617095179";
+// Relevant reactions:
+//	TestChannel Chime: 671883056617095179
+//	MaxRaid +: 646542193934336000
+
 // Set up blank QueueTable. The QueueTable holds the active Queues and all information needed to run them (all settings and the like).
 var QueueTable={};
 
@@ -189,6 +194,8 @@ client.on('message', msg => {
 			msg.reply("You are already Queued");
 		else{
 			QueueTable[msg.channel].queued.push(msg.author);
+
+			msg.react(joinReact);
 			
 			if(botMethods.isFilled(msg, QueueTable))
 				msg.channel.send("Queue filled.");
@@ -225,10 +232,10 @@ client.on('message', msg => {
 		let y=botMethods.findUser(msg, QueueTable);
 
 		if(y==-1){
-			msg.reply("You are not in the Queue.");
+			msg.author.send("You are not in the Queue.");
 		}
 		else{
-			msg.reply("You are in position "+(y+1)+" of the Queue.");
+			msg.author.send("You are in position "+(y+1)+" of the Queue.");
 		}
 
 	    break;
@@ -346,6 +353,12 @@ client.on('message', msg => {
 				replyms+="With duplicates allowed. ";
 			else
 				replyms+="With no duplicates allowed. ";
+		}
+		if(changed.sendUseList!=undefined){
+			if(changed.sendUseList)
+				replyms+="You will be notified of who joins. ";
+			else
+				replyms+="You will not be notified of who joins. ";
 		}
 		if(changed.banlist!=undefined) replyms+="You have "+changed.banlist.length+" users banned. ";
 
@@ -488,6 +501,21 @@ client.on('message', msg => {
 
 				msg.reply("The number of lobbies has been unrestricted.");
 			break;
+
+			case 'showusers': // Show who is sent the code
+
+				QueueTable[msg.channel].sendUseList=true;
+
+				msg.reply("You will be sent a list of the joining users.");
+			break;
+
+			case 'hideusers': // Hide the users that join
+
+				QueueTable[msg.channel].sendUseList=false;
+
+				msg.reply("You will no longer be sent a list of the joining users.");
+			break;
+
 
 			case 'lobbysize': // Number of people in a lobby
 
