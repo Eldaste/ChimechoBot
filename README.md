@@ -49,6 +49,10 @@ Commands:
 
 .boot <user> - kicks a user from the Queue
 
+.version - Announce version number
+
+diagnose - Sends errorlogfile. only usable from DM.
+
 
 Bot can be tried out here https://discord.gg/44j5GBg
 
