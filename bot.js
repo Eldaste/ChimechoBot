@@ -21,6 +21,7 @@ const fs = require('fs');
 // Set up defaults
 const prefix='.';
 const errorFile="errorfile.log";
+//const transferFile="temp.json";
 
 const joinReact="646542193934336000";
 // Relevant reactions:
@@ -59,6 +60,10 @@ client.on('message', msg => {
 	let args = message.split(' ');
         let cmd = args[0];
 
+
+	if(DMTable[msg.author].lastcode=='nil' && !(args[0]=='numQ' || args[0]=='.numQ' || args[0]=='diagnose'))
+		return;
+
 	switch(cmd) {
 		case 'next':
 		case '.next': // Call a new group on the Queue that was just sent.
@@ -79,6 +84,33 @@ client.on('message', msg => {
 			}
 
 			DMTable[msg.author].queue.send("The lobby is up now. Join in if you have a code!");
+			//DMTable[msg.author].queue.send("\`The lobby is up now. Join in if you have a code!\`");
+
+		case 'numQ':
+		case '.numQ': // DM version of numQ
+			if(QueueTable[DMTable[msg.author].queue] == undefined){
+				DMTable[msg.author]==undefined;
+				msg.author.send("The Queue no longer exists.");
+				break;
+			}
+
+			let cludgemsg={author:msg.author, channel:DMTable[msg.author].queue};
+			let y=botMethods.findUser(cludgemsg, QueueTable);
+
+			if(y==-1){
+				msg.author.send("You are not in the Queue.");
+			}
+			else{
+				msg.author.send("You are in position "+(y+1)+" of the Queue.");
+			}
+		break;
+
+		case 'diagnose': // Send the contents of the errorfile
+			msg.author.send("Sending...");
+
+			fs.readFile(errorFile,'utf8', function(err, datat) {
+				msg.author.send(datat).catch(function(error) {msg.author.send("I'm feeling fine.");});
+			});
 		break;
 
 	} // End Switch
@@ -109,6 +141,17 @@ client.on('message', msg => {
 		}
 		QueueTable[msg.channel]=botMethods.queueBase(msg);
 		msg.reply("Queue created.");
+
+	    break;
+
+	    case 'version': // Let's user know what version is running
+
+		let vers=require('./package.json').version;
+
+		if(args.length != 0 && args[0] == 'new')
+			msg.channel.send("New features as of version "+vers+":\n"+require('./versioninfo.json')[vers]);
+		else
+			msg.channel.send("I'm currently running version "+vers);
 
 	    break;
 
@@ -240,7 +283,10 @@ client.on('message', msg => {
 		}
 		else{
 			msg.author.send("You are in position "+(y+1)+" of the Queue.");
+			DMTable[msg.author]=botMethods.dmBase(msg.channel, 'nil');
 		}
+
+		msg.delete();
 
 	    break;
 
