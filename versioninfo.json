@@ -1,4 +1,5 @@
 {"3.4.0":"Bot will react to .join commands/n.numQ will interact with users via DM rather than in channel\nAdded configure options to send a list of the users joining each room",
 "3.5.0":"Added .version\n.numQ commands will now be deleted from the channel chat.\n.numQ now usable from DM after the first call",
-"3.6.0":"Changed showusers to one message.\nAdded configureQ options showjoin and hidejoin to further cut down spam."
+"3.6.0":"Changed showusers to one message.\nAdded configureQ options showjoin and hidejoin to further cut down spam.",
+"3.7.0":"Added configuration options attempts and openattempt\nAdded current under configureQ"
 }

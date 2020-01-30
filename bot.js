@@ -240,6 +240,15 @@ client.on('message', msg => {
 			msg.reply("You are currently banned from this host's raid queues.");
 			break;
 		}
+		if(!botMethods.attemptAvailable(msg, QueueTable)){
+			let rpl="You have already used your "+QueueTable[msg.channel].maxAttempts;
+			if(QueueTable[msg.channel].maxAttempts==1)
+				rpl+=" attempt.";
+			else
+				rpl+=" attempts.";
+			msg.reply(rpl);
+			break;
+		}
 
 		if(!QueueTable[msg.channel].dupes && botMethods.isEnqueued(msg, QueueTable))
 			msg.reply("You are already Queued");
@@ -404,28 +413,8 @@ client.on('message', msg => {
 
 		let changed=botMethods.setSettings(QueueTable[msg.channel], botMethods.readSettings(msg.author,fs));
 		let replyms="";
-
-		if(changed.maxplayers!=undefined) replyms+=(changed.maxplayers/QueueTable[msg.channel].size)+" rooms. ";
-		if(changed.size!=undefined) replyms+=changed.size+" to a room. ";
-		if(changed.dupes!=undefined){
-			if(changed.dupes)
-				replyms+="With duplicates allowed. ";
-			else
-				replyms+="With no duplicates allowed. ";
-		}
-		if(changed.useJoinReact!=undefined){
-			if(changed.useJoinReact)
-				replyms+=".joins will be acknowledged by reacts. ";
-			else
-				replyms+=".joins will be acknowledged by DM. ";
-		}
-		if(changed.sendUseList!=undefined){
-			if(changed.sendUseList)
-				replyms+="You will be notified of who joins. ";
-			else
-				replyms+="You will not be notified of who joins. ";
-		}
-		if(changed.banlist!=undefined) replyms+="You have "+changed.banlist.length+" users banned. ";
+	
+		replyms=botMethods.stringifyConfig(changed, QueueTable, msg);
 
 		if(replyms=="")
 			replyms="Ring-a-Ding! "+msg.author+", your queue has been created!";
@@ -565,6 +554,35 @@ client.on('message', msg => {
 				QueueTable[msg.channel].maxplayers=-1;
 
 				msg.reply("The number of lobbies has been unrestricted.");
+			break;
+
+			case 'current': // Display current config
+	
+				let replym= "Your current configuraton is:\n"
+
+				replym+=botMethods.stringifyConfig(botMethods.getSettings(QueueTable[msg.channel]), QueueTable, msg);
+
+				msg.reply(replym);
+
+			break;
+			
+			case 'attempts': // Maximum number of attempts per user
+
+				if(args.length == 1 || isNaN(args[1])){
+					msg.reply("Configuring the max number of attempts requires a number to be passed as the option.");
+					break;
+				}
+
+				QueueTable[msg.channel].maxAttempts=args[1];
+
+				msg.reply("The maximum number of attempts per user has been set to "+args[1]+".");
+			break;
+
+			case 'openattempt': // Remove maximum number of attempts
+
+				QueueTable[msg.channel].maxAttempts=-1;
+
+				msg.reply("The maximum number of attempts per user has been unrestricted.");
 			break;
 
 			case 'showusers': // Show who is sent the code
