@@ -236,6 +236,15 @@ client.on('message', msg => {
 			msg.reply("You are currently banned from this host's raid queues.");
 			break;
 		}
+		if(!botMethods.attemptAvailable(msg, QueueTable)){
+			let rpl="You have already used your "+QueueTable[msg.channel].maxAttempts;
+			if(QueueTable[msg.channel].maxAttempts==1)
+				rpl+=" attempt.";
+			else
+				rpl+=" attempts.";
+			msg.reply(rpl);
+			break;
+		}
 
 		if(!QueueTable[msg.channel].dupes && botMethods.isEnqueued(msg, QueueTable))
 			msg.reply("You are already Queued");
@@ -421,6 +430,18 @@ client.on('message', msg => {
 			else
 				replyms+="You will not be notified of who joins. ";
 		}
+		if(changed.maxAttempts!=undefined){
+			if(changed.maxAttempts==-1)
+				replyms+="Each user may join any number of times. ";
+			else{
+				replyms+="Each user may join "+changed.maxAttempts;
+				
+				if(changed.maxAttempts==1)
+					replyms+=" time. ";
+				else
+					replyms+=" times. ";
+			}
+		}
 		if(changed.banlist!=undefined) replyms+="You have "+changed.banlist.length+" users banned. ";
 
 		if(replyms=="")
@@ -561,6 +582,25 @@ client.on('message', msg => {
 				QueueTable[msg.channel].maxplayers=-1;
 
 				msg.reply("The number of lobbies has been unrestricted.");
+			break;
+			
+			case 'attempts': // Maximum number of attempts per user
+
+				if(args.length == 1 || isNaN(args[1])){
+					msg.reply("Configuring the max number of attempts requires a number to be passed as the option.");
+					break;
+				}
+
+				QueueTable[msg.channel].maxAttempts=args[1];
+
+				msg.reply("The maximum number of attempts per user has been set to "+args[1]+".");
+			break;
+
+			case 'openattempt': // Remove maximum number of attempts
+
+				QueueTable[msg.channel].maxAttempts=-1;
+
+				msg.reply("The maximum number of attempts per user has been unrestricted.");
 			break;
 
 			case 'showusers': // Show who is sent the code

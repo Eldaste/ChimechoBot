@@ -5,6 +5,7 @@ const allowDM=true;
 const defaultMaxPlayers=-1;
 const defaultSendUseList=false;
 const defaultUseJoinReact=true;
+const defaultmaxAttempts=-1;
 
 // Returns true if a Queue is active in the given channel
 exports.hasQueue = function (msg, table){
@@ -16,7 +17,7 @@ exports.hasQueue = function (msg, table){
 exports.queueBase = function (msg){
 	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, 
 		open:true, maxplayers:defaultMaxPlayers, banlist:[], sendUseList:defaultSendUseList,
-		useJoinReact:defaultUseJoinReact};
+		useJoinReact:defaultUseJoinReact, userTrack:{}, maxAttempts:defaultmaxAttempts};
 }
 
 // Takes a QueueTable entry and creates a SettingsDictionary for it
@@ -38,6 +39,9 @@ exports.getSettings = function (queue){
 	
 	if(queue.useJoinReact != defaultUseJoinReact)
 		base.useJoinReact=queue.useJoinReact;
+	
+	if(queue.maxAttempts != defaultmaxAttempts)
+		base.maxAttempts=queue.maxAttempts;
 	
 	if(queue.banlist.length!=0)
 		base.banlist=queue.banlist;
@@ -75,6 +79,12 @@ exports.setSettings = function (queue, settings){
 		base.useJoinReact=settings.useJoinReact;
 		queue.useJoinReact=settings.useJoinReact;
 	}
+
+	if(settings.maxAttempts!=undefined && queue.maxAttempts != settings.maxAttempts){
+		base.maxAttempts=settings.maxAttempts;
+		queue.maxAttempts=settings.maxAttempts;
+	}
+
 
 	if(settings.banlist!=undefined && queue.banlist != settings.banlist){
 		base.banlist=settings.banlist;
@@ -124,6 +134,18 @@ exports.checkBan = function (user, banlist){
 			return x;
 
 	return -1;
+}
+
+// Returns true if the user is under the max attempts for a channel
+exports.attemptAvailable = function (msg, table){
+	
+	if(table[msg.channel].maxAttempts==-1)
+		return true;
+
+	if(table[msg.channel].userTrack[msg.author.id]==undefined)
+		return true;
+
+	return table[msg.channel].userTrack[msg.author.id]<table[msg.channel].maxAttempts;
 }
 
 // Returns true iff the user is a mod of a given channel
@@ -282,6 +304,15 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 		if(table[chn].sendUseList)
 			totaltext+=user+" ";
 
+		// Track number of times user has joined of relevant, and number of users that have joined
+		if (table[chn].maxAttempts==-1)
+			table[chn].userTrack[user.id]=-1;
+		else{
+			if(table[chn].userTrack[user.id]==-1||table[chn].userTrack[user.id]==undefined)
+				table[chn].userTrack[user.id]=0;
+			table[chn].userTrack[user.id]++;
+		}
+
 		user.send("Your join code is "+code+". The lobby is going up soon. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 
 		total++;
@@ -359,6 +390,15 @@ exports.addMember = function (msg, table, dmtable, fromdm){
 
 	// Get a user 
 	let user=table[chn].queued.shift();
+
+	// Track number of times user has joined of relevant, and number of users that have joined
+	if (table[chn].maxAttempts==-1)
+		table[chn].userTrack[user.id]=-1;
+	else{
+		if(table[chn].userTrack[user.id]==-1||table[chn].userTrack[user.id]==undefined)
+			table[chn].userTrack[user.id]=0;
+		table[chn].userTrack[user.id]++;
+	}
 
 	user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 

@@ -36,6 +36,8 @@ Commands:
    - hideusers - Do not send a list of who joined to Queue owner
    - showjoin  - Users will recieve acknowledgement of joining by react.
    - hidejoin - Users will recieve acknowledgement of joining by DM and the .join messages will be deleted.
+   - attempts - Set a maximum number of joins each user gets
+   - openattempt - Removes the max number of attempts as set by attempts 
 
 .save - Saves the current configuration on a per user basis.
 
