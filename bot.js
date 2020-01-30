@@ -409,40 +409,8 @@ client.on('message', msg => {
 
 		let changed=botMethods.setSettings(QueueTable[msg.channel], botMethods.readSettings(msg.author,fs));
 		let replyms="";
-
-		if(changed.maxplayers!=undefined) replyms+=(changed.maxplayers/QueueTable[msg.channel].size)+" rooms. ";
-		if(changed.size!=undefined) replyms+=changed.size+" to a room. ";
-		if(changed.dupes!=undefined){
-			if(changed.dupes)
-				replyms+="With duplicates allowed. ";
-			else
-				replyms+="With no duplicates allowed. ";
-		}
-		if(changed.useJoinReact!=undefined){
-			if(changed.useJoinReact)
-				replyms+=".joins will be acknowledged by reacts. ";
-			else
-				replyms+=".joins will be acknowledged by DM. ";
-		}
-		if(changed.sendUseList!=undefined){
-			if(changed.sendUseList)
-				replyms+="You will be notified of who joins. ";
-			else
-				replyms+="You will not be notified of who joins. ";
-		}
-		if(changed.maxAttempts!=undefined){
-			if(changed.maxAttempts==-1)
-				replyms+="Each user may join any number of times. ";
-			else{
-				replyms+="Each user may join "+changed.maxAttempts;
-				
-				if(changed.maxAttempts==1)
-					replyms+=" time. ";
-				else
-					replyms+=" times. ";
-			}
-		}
-		if(changed.banlist!=undefined) replyms+="You have "+changed.banlist.length+" users banned. ";
+	
+		replyms=botMethods.stringifyConfig(changed, QueueTable, msg);
 
 		if(replyms=="")
 			replyms="Ring-a-Ding! "+msg.author+", your queue has been created!";
@@ -582,6 +550,16 @@ client.on('message', msg => {
 				QueueTable[msg.channel].maxplayers=-1;
 
 				msg.reply("The number of lobbies has been unrestricted.");
+			break;
+
+			case 'current': // Display current config
+	
+				let replym= "Your current configuraton is:\n"
+
+				replym+=botMethods.stringifyConfig(botMethods.getSettings(QueueTable[msg.channel]), QueueTable, msg);
+
+				msg.reply(replym);
+
 			break;
 			
 			case 'attempts': // Maximum number of attempts per user

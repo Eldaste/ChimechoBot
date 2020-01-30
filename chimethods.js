@@ -161,6 +161,48 @@ exports.isMod = function (msg, modNames){
 	return false;
 }
 
+// Returns a string representing the current configuration in readable English
+exports.stringifyConfig = function (config, table, msg){
+
+	let replyms="";
+
+	if(config.maxplayers!=undefined) replyms+=(config.maxplayers/table[msg.channel].size)+" rooms. ";
+	if(config.size!=undefined) replyms+=config.size+" to a room. ";
+	if(config.dupes!=undefined){
+		if(config.dupes)
+			replyms+="With duplicates allowed. ";
+		else
+			replyms+="With no duplicates allowed. ";
+	}
+	if(config.useJoinReact!=undefined){
+		if(config.useJoinReact)
+			replyms+=".joins will be acknowledged by reacts. ";
+		else
+			replyms+=".joins will be acknowledged by DM. ";
+	}
+	if(config.sendUseList!=undefined){
+		if(config.sendUseList)
+			replyms+="You will be notified of who joins. ";
+		else
+			replyms+="You will not be notified of who joins. ";
+	}
+	if(config.maxAttempts!=undefined){
+		if(config.maxAttempts==-1)
+			replyms+="Each user may join any number of times. ";
+		else{
+			replyms+="Each user may join "+config.maxAttempts;
+			
+			if(config.maxAttempts==1)
+				replyms+=" time. ";
+			else
+				replyms+=" times. ";
+		}
+	}
+	if(config.banlist!=undefined) replyms+="You have "+config.banlist.length+" users banned. ";
+
+	return replyms;
+}
+
 // Clears the Queue if the Queue is empty and messages the owner/channel that the Queue no longer exists.
 // Returns true if the channel was cleared.
 exports.clearIfEmpty = function (msg, table, chn){

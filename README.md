@@ -38,6 +38,7 @@ Commands:
    - hidejoin - Users will recieve acknowledgement of joining by DM and the .join messages will be deleted.
    - attempts - Set a maximum number of joins each user gets
    - openattempt - Removes the max number of attempts as set by attempts 
+   - current - Display the current configuration.
 
 .save - Saves the current configuration on a per user basis.
 
