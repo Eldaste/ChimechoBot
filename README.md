@@ -85,6 +85,5 @@ Ability for Mods to lock certian option configurations on a per-server basis
 Ability to do a "rolling update"
 
 Configuration options:
-  - Max number of attempts
   - Allow users to add themselevs multiple times in a single Queue
   - Unique user tracking on/off 
