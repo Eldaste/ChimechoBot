@@ -34,6 +34,8 @@ Commands:
    - openlobby - Removes the max lobby restriction set by lobbies.
    - showusers - Send a list of who joined to Queue owner
    - hideusers - Do not send a list of who joined to Queue owner
+   - showjoin  - Users will recieve acknowledgement of joining by react.
+   - hidejoin - Users will recieve acknowledgement of joining by DM and the .join messages will be deleted.
 
 .save - Saves the current configuration on a per user basis.
 
