@@ -1,5 +1,5 @@
 // Set authentication method
-const useAuthFile=true;
+const useAuthFile=false;
 
 // Import required libraries
 const Discord = require('discord.js');
@@ -23,7 +23,7 @@ const prefix='.';
 const errorFile="errorfile.log";
 //const transferFile="temp.json";
 
-const joinReact="671883056617095179";
+const joinReact="646542193934336000";
 // Relevant reactions:
 //	TestChannel Chime: 671883056617095179
 //	MaxRaid +: 646542193934336000
