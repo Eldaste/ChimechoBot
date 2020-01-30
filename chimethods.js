@@ -4,6 +4,7 @@ const defaultDuplication=false;
 const allowDM=true;
 const defaultMaxPlayers=-1;
 const defaultSendUseList=false;
+const defaultUseJoinReact=true;
 
 // Returns true if a Queue is active in the given channel
 exports.hasQueue = function (msg, table){
@@ -14,7 +15,8 @@ exports.hasQueue = function (msg, table){
 // and 'owner' set to the message sender
 exports.queueBase = function (msg){
 	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, 
-		open:true, maxplayers:defaultMaxPlayers, banlist:[], sendUseList:defaultSendUseList};
+		open:true, maxplayers:defaultMaxPlayers, banlist:[], sendUseList:defaultSendUseList,
+		useJoinReact:defaultUseJoinReact};
 }
 
 // Takes a QueueTable entry and creates a SettingsDictionary for it
@@ -33,6 +35,9 @@ exports.getSettings = function (queue){
 
 	if(queue.sendUseList != defaultSendUseList)
 		base.sendUseList=queue.sendUseList;
+	
+	if(queue.useJoinReact != defaultUseJoinReact)
+		base.useJoinReact=queue.useJoinReact;
 	
 	if(queue.banlist.length!=0)
 		base.banlist=queue.banlist;
@@ -64,6 +69,11 @@ exports.setSettings = function (queue, settings){
 	if(settings.sendUseList!=undefined && queue.sendUseList != settings.sendUseList){
 		base.sendUseList=settings.sendUseList;
 		queue.sendUseList=settings.sendUseList;
+	}
+
+	if(settings.useJoinReact!=undefined && queue.useJoinReact != settings.useJoinReact){
+		base.useJoinReact=settings.useJoinReact;
+		queue.useJoinReact=settings.useJoinReact;
 	}
 
 	if(settings.banlist!=undefined && queue.banlist != settings.banlist){
@@ -270,7 +280,7 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 		let user=table[chn].queued.shift();
 	
 		if(table[chn].sendUseList)
-			totaltext+=user;
+			totaltext+=user+" ";
 
 		user.send("Your join code is "+code+". The lobby is going up soon. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 
@@ -282,12 +292,16 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 		}
 	}
 
+	let tosend="";
+
 	// Alert Queue owner to the code and how many to expect
-	if(total == 1) msg.author.send("The code is "+code+". "+total+" user is joining.");
-	else msg.author.send("The code is "+code+". "+total+" users are joining.");
+	if(total == 1) tosend="The code is "+code+". "+total+" user is joining.";
+	else tosend="The code is "+code+". "+total+" users are joining.";
 
 	if(table[chn].sendUseList)
-		msg.author.send("Joining users: "+totaltext);
+		tosend+="\nJoining users: "+totaltext;
+
+	msg.author.send(tosend);
 
 	// Set up DMTable entry if needed. Otherwise update with new code.
 	if(fromdm)
@@ -348,10 +362,12 @@ exports.addMember = function (msg, table, dmtable, fromdm){
 
 	user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 
-	msg.author.send("The next in queue has been sent a code.");
-	
+	let tosend="The next in queue has been sent a code.";
+
 	if(table[chn].sendUseList)
-		msg.author.send("Joining user: "+user);
+		tosend+="\nJoining user: "+user;
+
+	msg.author.send(tosend);
 
 	if(!table[chn].open || table[chn].maxplayers == 0)
 		if(this.clearIfEmpty(msg, table, chn))

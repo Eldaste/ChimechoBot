@@ -144,8 +144,12 @@ client.on('message', msg => {
 
 		let vers=require('./package.json').version;
 
-		if(args.length != 0 && args[0] == 'new')
-			msg.channel.send("New features as of version "+vers+":\n"+require('./versioninfo.json')[vers]);
+		if(args.length != 0 && args[0] == 'new'){
+			if(args.length != 1)
+				msg.channel.send("New features as of version "+args[1]+":\n"+require('./versioninfo.json')[args[1]]);
+			else
+				msg.channel.send("New features as of version "+vers+":\n"+require('./versioninfo.json')[vers]);
+		}
 		else
 			msg.channel.send("I'm currently running version "+vers);
 
@@ -238,7 +242,12 @@ client.on('message', msg => {
 		else{
 			QueueTable[msg.channel].queued.push(msg.author);
 
-			msg.react(joinReact);
+			if(QueueTable[msg.channel].useJoinReact)
+				msg.react(joinReact);
+			else{
+				msg.author.send("You have joined in position "+(botMethods.findUser(msg, QueueTable)+1)+" of the Queue.");
+				msg.delete();
+			}
 			
 			if(botMethods.isFilled(msg, QueueTable))
 				msg.channel.send("Queue filled.");
@@ -400,6 +409,12 @@ client.on('message', msg => {
 			else
 				replyms+="With no duplicates allowed. ";
 		}
+		if(changed.useJoinReact!=undefined){
+			if(changed.useJoinReact)
+				replyms+=".joins will be acknowledged by reacts. ";
+			else
+				replyms+=".joins will be acknowledged by DM. ";
+		}
 		if(changed.sendUseList!=undefined){
 			if(changed.sendUseList)
 				replyms+="You will be notified of who joins. ";
@@ -560,6 +575,20 @@ client.on('message', msg => {
 				QueueTable[msg.channel].sendUseList=false;
 
 				msg.reply("You will no longer be sent a list of the joining users.");
+			break;
+
+			case 'hidejoin': // Hide the .join message
+
+				QueueTable[msg.channel].useJoinReact=false;
+
+				msg.reply("Users will recieve acknowledgement of joining by DM.");
+			break;
+
+			case 'showjoin': // Show the .join message
+
+				QueueTable[msg.channel].useJoinReact=true;
+
+				msg.reply("Users will recieve acknowledgement of joining by react.");
 			break;
 
 
