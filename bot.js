@@ -85,6 +85,7 @@ client.on('message', msg => {
 
 			DMTable[msg.author].queue.send("The lobby is up now. Join in if you have a code!");
 			//DMTable[msg.author].queue.send("\`The lobby is up now. Join in if you have a code!\`");
+		break;
 
 		case 'numQ':
 		case '.numQ': // DM version of numQ

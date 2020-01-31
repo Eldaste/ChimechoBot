@@ -355,7 +355,7 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 			table[chn].userTrack[user.id]++;
 		}
 
-		user.send("Your join code is "+code+". The lobby is going up soon. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
+		user.send("Your join code for "+chn.name+" is "+code+". The lobby is going up soon. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 
 		total++;
 
@@ -442,7 +442,7 @@ exports.addMember = function (msg, table, dmtable, fromdm){
 		table[chn].userTrack[user.id]++;
 	}
 
-	user.send("Your join code is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
+	user.send("Your join code for "+chn.name+" is "+code+". The lobby is up now. If you miss your chance, you'll need to join the queue again.").catch(err => msg.channel.send('Unable to alert a player of the code.'));
 
 	let tosend="The next in queue has been sent a code.";
 
