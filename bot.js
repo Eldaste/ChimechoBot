@@ -64,7 +64,7 @@ client.on('message', msg => {
 	if(DMTable[msg.author].lastcode=='nil' && !(args[0]=='numQ' || args[0]=='.numQ' || args[0]=='diagnose'))
 		return;
 
-	switch(cmd) {
+	switch(cmd.toLowerCase()) {
 		case 'next':
 		case '.next': // Call a new group on the Queue that was just sent.
 			botMethods.createGroup(msg, QueueTable, DMTable, true);
@@ -87,8 +87,8 @@ client.on('message', msg => {
 			//DMTable[msg.author].queue.send("\`The lobby is up now. Join in if you have a code!\`");
 		break;
 
-		case 'numQ':
-		case '.numQ': // DM version of numQ
+		case 'numq':
+		case '.numq': // DM version of numQ
 			if(QueueTable[DMTable[msg.author].queue] == undefined){
 				DMTable[msg.author]==undefined;
 				msg.author.send("The Queue no longer exists.");
@@ -128,9 +128,9 @@ client.on('message', msg => {
 	args = args.splice(1);
 
 	// Parse Command
-	switch(cmd) {
+	switch(cmd.toLowerCase()) {
 
-	    case 'createQ': // Creates a Queue in the given channel if one does not exist already
+	    case 'createq': // Creates a Queue in the given channel if one does not exist already
 
 		if(botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("This channel has an active Queue.");
@@ -156,7 +156,7 @@ client.on('message', msg => {
 
 	    break;
 
-	    case 'deleteQ': // Removes the Queue if sent by the Queue owner
+	    case 'deleteq': // Removes the Queue if sent by the Queue owner
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -172,7 +172,7 @@ client.on('message', msg => {
 	    break;
 
 
-	    case 'modDelete': // Removes the Queue if sent by the Queue owner
+	    case 'moddelete': // Removes the Queue if sent by the Queue owner
 			      // Intended to clear channels left locked by absent owners
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
@@ -187,7 +187,7 @@ client.on('message', msg => {
 		msg.reply("Queue cleared.");
 	    break;
 
-	    case 'closeQ': // Closes Queue to further joins and deletes the Queue if empty
+	    case 'closeq': // Closes Queue to further joins and deletes the Queue if empty
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -205,7 +205,7 @@ client.on('message', msg => {
 	    break;
 
 
-	    case 'openQ': // Reopens Queue to further joins if it exists
+	    case 'openq': // Reopens Queue to further joins if it exists
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -285,7 +285,7 @@ client.on('message', msg => {
 			botMethods.clearIfEmpty(msg, QueueTable, msg.channel);
 	    break;
 
-	    case 'numQ': // Displays the user's first spot in the Queue
+	    case 'numq': // Displays the user's first spot in the Queue
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -305,7 +305,7 @@ client.on('message', msg => {
 
 	    break;
 
-	    case 'viewQ': // Sends Queue owner a list of evryone in the Queue 
+	    case 'viewq': // Sends Queue owner a list of evryone in the Queue 
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -322,7 +322,7 @@ client.on('message', msg => {
 	    break;
 
 
-	    case 'countQ': // Sends Queue owner how many are in the Queue 
+	    case 'countq': // Sends Queue owner how many are in the Queue 
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -342,7 +342,7 @@ client.on('message', msg => {
 		msg.author.send("There are "+QueueTable[msg.channel].queued.length+" people in the Queue");
 	    break;
 
-	    case 'activeQueues': // For use in identifying when matinenece is safe
+	    case 'activequeues': // For use in identifying when matinenece is safe
 		let num=0;
 
 		for(let x in QueueTable)
@@ -518,7 +518,7 @@ client.on('message', msg => {
 	//   case 'crash':
 	//	throw 'up';
 
-	    case 'configureQ': // For use in changing settings
+	    case 'configureq': // For use in changing settings
 		if(!botMethods.hasQueue(msg, QueueTable)){
 			msg.reply("No active Queue.");
 			break;
@@ -532,7 +532,7 @@ client.on('message', msg => {
 			break;
 		}
 
-		switch(args[0]) {
+		switch(args[0].toLowerCase()) {
 			
 			case 'lobbies': // Maximum number of lobbies
 
