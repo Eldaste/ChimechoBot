@@ -278,7 +278,7 @@ client.on('message', msg => {
 			msg.reply("You have been removed.");
 		}
 
-		if(ispastfil && !botMethods.isFilled(msg, QueueTable))
+		if(ispastfil && !botMethods.isFilled(msg, QueueTable) && QueueTable[msg.channel].open)
 			msg.channel.send("A spot has opened! Join while you can.");
 		
 		if(!QueueTable[msg.channel].open)
