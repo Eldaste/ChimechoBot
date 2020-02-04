@@ -1,5 +1,6 @@
-// Set authentication method
+// Set authentication method and if whitelist or blacklist
 const useAuthFile=false;
+const useWhitelist=true;
 
 // Import required libraries
 const Discord = require('discord.js');
@@ -13,7 +14,10 @@ const definitionsFile = require('./definitions.json');
 
 // Set up client
 const client = new Discord.Client();
-var channelBlacklist=blackfile.blacklisted;
+if(useWhitelist)
+	var channelWhitelist=blackfile.whitelisted;
+else
+	var channelBlacklist=blackfile.blacklisted;
 
 // Set up the fileEditor for saving settings
 const fs = require('fs'); 
@@ -43,8 +47,13 @@ client.on('message', msg => {
   try{
 
     // Escape if channel is in the blacklist or it is a message of the bot
-    if (channelBlacklist.indexOf(msg.channel.id) != -1 || msg.author == client.user)
-	return;
+    if (useWhitelist){
+	if (msg.author == client.user)
+		return;
+    }
+    else
+	if (channelBlacklist.indexOf(msg.channel.id) != -1 || msg.author == client.user)
+		return;
 
     // Extract content for easier manipulation
     let message=msg.content;
@@ -118,6 +127,11 @@ client.on('message', msg => {
 
 	return;
     }
+
+    // If using the Whitelist, check if channel is on it
+    if (useWhitelist)
+	if (channelWhitelist.indexOf(msg.channel.id) == -1)
+		return;
 
     // Check if command for the bot
     if (message.startsWith(prefix)) {
