@@ -1,3 +1,6 @@
+// Create datawriter
+const io=require('./datawriter.js');
+
 // Set up defaults
 const defaultNum=3;
 const defaultDuplication=false;
@@ -96,29 +99,15 @@ exports.setSettings = function (queue, settings){
 
 // Save a User's settings if able
 // Returns true if able, false otherwise
-exports.saveSettings = function (user, settings, fs){
+exports.saveSettings = function (user, settings){
 	
-	let path = "./User_Preferences/"+user.id+".json";
-
-	fs.writeFile (path, JSON.stringify(settings), function(err) {if(err) return false;});
-	
-	return true;
+	return io.saveUserPref(user, settings);
 }
 
 // Retrieve a User's settings if able
-exports.readSettings = function (user, fs){
+exports.readSettings = function (user){
 	
-	let result = {};
-	
-	let path = "./User_Preferences/"+user.id+".json";
-
-	try{
-		let data=fs.readFileSync(path);
-		result = JSON.parse(data); 
-
-	} catch(err){} // Catches the error of the file not existing
-
-	return result;
+	return io.readUserPref(user);
 }
 
 // Returns true iff the user is the owner of a given channel's Queue
