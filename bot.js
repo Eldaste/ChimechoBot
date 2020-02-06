@@ -1,5 +1,5 @@
 // Set authentication method and if whitelist or blacklist
-const useAuthFile=true;
+const useAuthFile=false;
 const useWhitelist=false;
 
 // Import required libraries
@@ -408,7 +408,7 @@ client.on('message', msg => {
 			break;
 		}
 
-		if(botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel]), fs))
+		if(botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel])))
 			msg.reply("I think I've got all that. I'll have everything ready for you next time you ring.");
 
 	    break;
@@ -422,7 +422,7 @@ client.on('message', msg => {
 
 		QueueTable[msg.channel]=botMethods.queueBase(msg);
 
-		let changed=botMethods.setSettings(QueueTable[msg.channel], botMethods.readSettings(msg.author,fs));
+		let changed=botMethods.setSettings(QueueTable[msg.channel], botMethods.readSettings(msg.author));
 		let replyms="";
 	
 		replyms=botMethods.stringifyConfig(changed, QueueTable, msg);
