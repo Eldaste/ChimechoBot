@@ -43,7 +43,7 @@ client.on('ready', () => {
 });
 
 
-client.on('message', msg => {
+client.on('message', async msg => {
   try{
 
     // Escape if channel is in the blacklist or it is a message of the bot
@@ -408,7 +408,7 @@ client.on('message', msg => {
 			break;
 		}
 
-		if(botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel])))
+		if(await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel])))
 			msg.reply("I think I've got all that. I'll have everything ready for you next time you ring.");
 
 	    break;
@@ -422,7 +422,7 @@ client.on('message', msg => {
 
 		QueueTable[msg.channel]=botMethods.queueBase(msg);
 
-		let changed=botMethods.setSettings(QueueTable[msg.channel], botMethods.readSettings(msg.author));
+		let changed=botMethods.setSettings(QueueTable[msg.channel], await botMethods.readSettings(msg.author));
 		let replyms="";
 	
 		replyms=botMethods.stringifyConfig(changed, QueueTable, msg);

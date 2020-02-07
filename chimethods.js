@@ -99,15 +99,15 @@ exports.setSettings = function (queue, settings){
 
 // Save a User's settings if able
 // Returns true if able, false otherwise
-exports.saveSettings = function (user, settings){
+exports.saveSettings = async function (user, settings){
 	
-	return io.saveUserPref(user, settings);
+	return await io.saveUserPref(user, settings);
 }
 
 // Retrieve a User's settings if able
-exports.readSettings = function (user){
+exports.readSettings = async function (user){
 	
-	return io.readUserPref(user);
+	return await io.readUserPref(user);
 }
 
 // Returns true iff the user is the owner of a given channel's Queue
