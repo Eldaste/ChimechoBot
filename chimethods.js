@@ -110,6 +110,51 @@ exports.readSettings = async function (user){
 	return await io.readUserPref(user);
 }
 
+// Returns a promise to write the given table to memory
+exports.saveTable = function (table, client){
+	
+	let internalGetSettings = this.getSettings;
+	
+	let stripChn = function (chn){
+		return chn.replace(/[\\<>@#&!]/g, "");
+	}
+	
+	return new Promise( async function (resolve, reject) {
+		try{
+			let striptable={};
+
+			// Strip the empty Queues, and save only user IDs rather than full user data
+			for(let x in table)
+				if(table[x]!=undefined){
+					
+					let sx=stripChn(x);
+					
+					await client.channels.get(sx).send("Hold on, I need to reorganize.");
+					
+					striptable[sx]={};
+					
+					striptable[sx].settings=internalGetSettings(table[x]);
+					striptable[sx].owner=table[x].owner.id;
+					striptable[sx].open=table[x].open;
+					striptable[sx].userTrack=table[x].userTrack;
+					striptable[sx].queued=[];
+					
+					// Strip user IDs from those in Queue
+					for(let y=0;y<table[x].queued.length;y++){
+						striptable[sx].queued.push(table[x].queued[y].id);
+					}
+				}
+				
+			await io.saveTableData(striptable).catch(er => {throw er;});
+			
+			resolve(true);
+		}
+		catch(err){
+			reject(err);
+		}
+	});
+}
+
 // Returns true iff the user is the owner of a given channel's Queue
 exports.isOwner = function (msg, table){
 	return table[msg.channel].owner==msg.author;

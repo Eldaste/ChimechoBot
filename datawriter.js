@@ -1,5 +1,5 @@
 // Settings
-const useDB=true;
+const useDB=false;
 
 // Set up 
 if(useDB){
@@ -39,6 +39,18 @@ exports.saveUserPref = async function (user, settings){
 		return await fs.promises.writeFile(path, JSON.stringify(settings)).then(_=>{return true;}).catch(err=>{return false;});
 	}
 }
+
+// Saves a table of active Queues
+exports.saveTableData = async function (data){
+	//Data is in the form of a JSON object with the channel IDs as the keys
+	
+	if(useDB){
+		//Deal with DB here
+	}
+	else{
+		return await fs.promises.writeFile('temp.json', JSON.stringify(data)).then(_=>{return true;}).catch(err=>{throw err;});
+	}
+}	
 
 // Retrieve a User's settings if able
 exports.readUserPref = async function (user){

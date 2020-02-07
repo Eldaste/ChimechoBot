@@ -38,6 +38,9 @@ var QueueTable={};
 // Set up blank DMTable. The DMTable is used for anything that involves any DM functionallity.
 var DMTable={};
 
+// Set up the shutdown listener
+var shutdown = false;
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -45,6 +48,10 @@ client.on('ready', () => {
 
 client.on('message', async msg => {
   try{
+	  
+	// If shutting down, ignore all commands
+	if(shutdown)
+		return;
 
     // Escape if channel is in the blacklist or it is a message of the bot
     if (useWhitelist){
@@ -139,7 +146,7 @@ client.on('message', async msg => {
 	// Remove command indicatior prefix and split into args and command
         let args = message.substring(prefix.length).split(' ');
         let cmd = args[0];
-	args = args.splice(1);
+		args = args.splice(1);
 
 	// Parse Command
 	switch(cmd.toLowerCase()) {
@@ -410,6 +417,8 @@ client.on('message', async msg => {
 
 		if(await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel])))
 			msg.reply("I think I've got all that. I'll have everything ready for you next time you ring.");
+		else
+			msg.reply('Oh dear. I seem to have dropped my notes. Would you mind trying that again?');
 
 	    break;
 
@@ -660,15 +669,41 @@ client.on('message', async msg => {
 	try{time=new Date().toGMTString();}
 	catch(er){}
 
-	let errmess = time+":\n"+err+"|\n\n";
+	let errmess = time+":\n"+err+"\n\n";
 
  	fs.appendFile(errorFile, errmess, (erro) => {
  		// If there's a problem writing errors, just silently suffer
 	});
 	
+	console.log(errmess);
+	
 	try{msg.channel.send("Oh, I don't feel so good.");}
 	catch(er){}
   }
+});
+
+
+// Handle graceful shutdown, save current Queues and terminate connections
+process.on('SIGINT', () => {
+	console.log('Stopping server');
+	
+	botMethods.saveTable(QueueTable, client).then(_=>{
+		client.destroy().then(_=>{
+			console.log('Closed sever');
+			process.exit(0);
+		}).catch(erro=>{throw erro});
+	}).catch(eror=>{console.log(eror); process.exit(1);});
+});
+
+process.on('SIGTERM', () => {
+	console.log('Stopping server');
+	
+	botMethods.saveTable(QueueTable, client).then(_=>{
+		client.destroy().then(_=>{
+			console.log('Closed sever');
+			process.exit(0);
+		}).catch(erro=>{throw erro});
+	}).catch(eror=>{console.log(eror); process.exit(1);});
 });
 
 // Ensure that the filesystem exists for user preferences
