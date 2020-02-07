@@ -54,7 +54,8 @@ exports.readUserPref = async function (user){
 			if(data.length==0)
 				return;
 rsm=data;
-			let tmp=data.datum;
+			let tmp=data.datum
+	rsm+='\ntempdata: '+tmp;
 			result=JSON.parse(tmp);
 		}).catch(err=>{result.err=""+err+'\n'+rsm;});
 	}
