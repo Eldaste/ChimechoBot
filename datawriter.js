@@ -24,7 +24,7 @@ exports.saveUserPref = async function (user, settings){
 	if(useDB){
 		// Create values table
 		let vals=[user.id, JSON.stringify(settings)];
-		let text='DELETE FROM preferences WHERE id = $1;';
+		let text='DELETE FROM preferences WHERE preferences.id = $1;';
 		
 		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{});
 		
@@ -47,7 +47,7 @@ exports.readUserPref = async function (user){
 	if(useDB){
 		// Handle DB
 		let vals=[user.id];
-		let text='SELECT id, datum FROM preferences WHERE id = $1;';
+		let text='SELECT id, datum FROM preferences WHERE preferences.id = $1;';
 		
 		await dbconnect.query(text, vals).then(data=>{
 			if(data.length==0)
