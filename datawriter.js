@@ -51,10 +51,10 @@ exports.readUserPref = async function (user){
 		let text='SELECT id, datum FROM preferences WHERE preferences.id = $1;';
 	let rsm='';	
 		await dbconnect.query(text, vals).then(data=>{
-			if(data.length==0)
+			if(data.rows.length==0)
 				return;
 rsm=data;
-			let tmp=data.datum
+			let tmp=data.rows[0].datum
 	rsm+='\ntempdata: '+tmp;
 			result=JSON.parse(tmp);
 		}).catch(err=>{result.err=""+err+'\n'+rsm;});
