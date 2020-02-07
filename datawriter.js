@@ -27,7 +27,7 @@ exports.saveUserPref = async function (user, settings){
 		let text='DELETE FROM preferences WHERE id = $1;'+
 				'INSERT INTO preferences (id, datum) VALUES ($1, $2);';
 		
-		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return false;});
+		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return err;});
 	}
 	else{
 		let path = "./User_Preferences/"+user.id+".json";
