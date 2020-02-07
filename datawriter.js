@@ -24,8 +24,11 @@ exports.saveUserPref = async function (user, settings){
 	if(useDB){
 		// Create values table
 		let vals=[user.id, JSON.stringify(settings)];
-		let text='DELETE FROM preferences WHERE id = $1;'+
-				'INSERT INTO preferences (id, datum) VALUES ($1, $2);';
+		let text='DELETE FROM preferences WHERE id = $1;';
+		
+		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{});
+		
+		text='INSERT INTO preferences (id, datum) VALUES ($1, $2);';
 		
 		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return err;});
 	}
@@ -39,12 +42,12 @@ exports.saveUserPref = async function (user, settings){
 // Retrieve a User's settings if able
 exports.readUserPref = async function (user){
 	
-	let result = {};
+	let result = {"banlist":["675051020996444242"]};
 	
 	if(useDB){
 		// Handle DB
 		let vals=[user.id];
-		let text='SELECT (id, datum) FROM preferences WHERE id = $1;';
+		let text='SELECT id, datum FROM preferences WHERE id = $1;';
 		
 		await dbconnect.query(text, vals).then(data=>{
 			if(data.length==0)
