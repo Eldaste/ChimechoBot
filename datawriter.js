@@ -43,7 +43,7 @@ let tmp=' ';
 // Retrieve a User's settings if able
 exports.readUserPref = async function (user){
 	
-	let result = {"banlist":["675051020996444242"]};
+	let result = {};
 	
 	if(useDB){
 		// Handle DB
@@ -61,7 +61,7 @@ exports.readUserPref = async function (user){
 	else{	
 		let path = "./User_Preferences/"+user.id+".json";
 
-		await fs.promises.readFile(path, 'utf8').then(data=>{result=JSON.parse(data);}).catch(err=>{});
+		await fs.promises.readFile(path, 'utf8').then(data=>{result=JSON.parse(data);}).catch(err=>{result.err=""+err;});
 	}
 	
 	return result;

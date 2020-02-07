@@ -426,8 +426,11 @@ let temp=await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueT
 		}
 
 		QueueTable[msg.channel]=botMethods.queueBase(msg);
+		let ttt=await botMethods.readSettings(msg.author);
+		if(ttt.err!=undefined)
+			msg.channel.send(ttt.err);
 
-		let changed=botMethods.setSettings(QueueTable[msg.channel], await botMethods.readSettings(msg.author));
+		let changed=botMethods.setSettings(QueueTable[msg.channel], ttt);
 		let replyms="";
 	
 		replyms=botMethods.stringifyConfig(changed, QueueTable, msg);
