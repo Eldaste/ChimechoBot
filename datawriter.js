@@ -25,12 +25,12 @@ exports.saveUserPref = async function (user, settings){
 		// Create values table
 		let vals=[user.id, JSON.stringify(settings)];
 		let text='DELETE FROM preferences WHERE preferences.id = $1;';
-		
-		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{});
+let tmp=' ';
+		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{tmp=err+tmp;});
 		
 		text='INSERT INTO preferences (id, datum) VALUES ($1, $2);';
 		
-		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return err;});
+		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return tmp+err;});
 	}
 	else{
 		let path = "./User_Preferences/"+user.id+".json";
