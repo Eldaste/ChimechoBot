@@ -49,14 +49,14 @@ exports.readUserPref = async function (user){
 		// Handle DB
 		let vals=[user.id];
 		let text='SELECT id, datum FROM preferences WHERE preferences.id = $1;';
-		
+	let rsm='';	
 		await dbconnect.query(text, vals).then(data=>{
 			if(data.length==0)
 				return;
-			
+rsm=data;
 			let tmp=data[0].datum;
 			result=JSON.parse(tmp);
-		}).catch(err=>{result.err=""+err;});
+		}).catch(err=>{result.err=""+err+'\n'+rsm;});
 	}
 	else{	
 		let path = "./User_Preferences/"+user.id+".json";
