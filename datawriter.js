@@ -54,14 +54,14 @@ exports.readUserPref = async function (user){
 			if(data.length==0)
 				return;
 			
-			let tmp=data[1].datum;
+			let tmp=data[0].datum;
 			result=JSON.parse(tmp);
-		}).catch(err=>{});
+		}).catch(err=>{result.err=""+err;});
 	}
 	else{	
 		let path = "./User_Preferences/"+user.id+".json";
 
-		await fs.promises.readFile(path, 'utf8').then(data=>{result=JSON.parse(data);}).catch(err=>{result.err=""+err;});
+		await fs.promises.readFile(path, 'utf8').then(data=>{result=JSON.parse(data);}).catch(err=>{});
 	}
 	
 	return result;
