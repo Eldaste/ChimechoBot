@@ -25,13 +25,13 @@ exports.saveUserPref = async function (user, settings){
 		// Create values table
 		let vals=[user.id];
 		let text='DELETE FROM preferences WHERE preferences.id = $1;';
-let tmp=' ';
-		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{tmp=err+tmp;});
+
+		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{});
 
 		vals=[user.id, JSON.stringify(settings)];
 		text='INSERT INTO preferences (id, datum) VALUES ($1, $2);';
 		
-		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return tmp+err;});
+		return await dbconnect.query(text, vals).then(data=>{return true;}).catch(err=>{return false;});
 	}
 	else{
 		let path = "./User_Preferences/"+user.id+".json";
@@ -49,15 +49,14 @@ exports.readUserPref = async function (user){
 		// Handle DB
 		let vals=[user.id];
 		let text='SELECT id, datum FROM preferences WHERE preferences.id = $1;';
-	let rsm='';	
+
 		await dbconnect.query(text, vals).then(data=>{
 			if(data.rows.length==0)
 				return;
-rsm=data;
+
 			let tmp=data.rows[0].datum;
-	rsm+='\ntempdata: '+JSON.stringify(tmp);
 			result=tmp;
-		}).catch(err=>{result.err=""+err+'\n'+rsm;});
+		}).catch(err=>{});
 	}
 	else{	
 		let path = "./User_Preferences/"+user.id+".json";

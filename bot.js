@@ -407,14 +407,9 @@ client.on('message', async msg => {
 			msg.reply("Invalid Permissions.");
 			break;
 		}
-let temp=await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel]));
-		if(temp==true)
+
+		if(await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel])))
 			msg.reply("I think I've got all that. I'll have everything ready for you next time you ring.");
-		else{
-			
-			msg.reply(temp);
-			msg.reply(temp.code);
-		}
 
 	    break;
 
@@ -426,11 +421,8 @@ let temp=await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueT
 		}
 
 		QueueTable[msg.channel]=botMethods.queueBase(msg);
-		let ttt=await botMethods.readSettings(msg.author);
-		if(ttt.err!=undefined)
-			msg.channel.send(ttt.err);
 
-		let changed=botMethods.setSettings(QueueTable[msg.channel], ttt);
+		let changed=botMethods.setSettings(QueueTable[msg.channel], await botMethods.readSettings(msg.author));
 		let replyms="";
 	
 		replyms=botMethods.stringifyConfig(changed, QueueTable, msg);
