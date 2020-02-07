@@ -408,10 +408,13 @@ client.on('message', async msg => {
 			break;
 		}
 let temp=await botMethods.saveSettings(msg.author, botMethods.getSettings(QueueTable[msg.channel]));
-		if(tmp==true)
+		if(temp==true)
 			msg.reply("I think I've got all that. I'll have everything ready for you next time you ring.");
-		else
-			msg.reply(tmp);
+		else{
+			
+			msg.reply(temp);
+			msg.reply(temp.code);
+		}
 
 	    break;
 
