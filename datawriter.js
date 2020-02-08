@@ -59,7 +59,7 @@ exports.saveTableData = async function (data){
 		for(let x in data){
 			vals=[x, JSON.stringify(data[x])];
 			
-			dbconnect.query(text, vals).catch(err=>{});
+			await dbconnect.query(text, vals).catch(err=>{});
 		}
 	}
 	else{
