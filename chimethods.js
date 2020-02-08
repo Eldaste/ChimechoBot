@@ -309,7 +309,7 @@ exports.clearIfEmpty = function (msg, table, chn){
 exports.findUser = function (msg, table){
 	
 	for(let x=0; x<table[msg.channel].queued.length;x++)
-		if(table[msg.channel].queued[x]==msg.author)
+		if(table[msg.channel].queued[x].id==msg.author.id)
 			return x;	
 
 	return -1;
@@ -319,7 +319,7 @@ exports.findUser = function (msg, table){
 exports.isEnqueued = function (msg, table){
 
 	for(let x of table[msg.channel].queued)
-		if(x==msg.author)
+		if(x.id==msg.author.id)
 			return true;
 
 	return false;
