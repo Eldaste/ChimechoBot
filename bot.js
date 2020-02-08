@@ -691,6 +691,7 @@ client.on('message', async msg => {
 // Handle graceful shutdown, save current Queues and terminate connections
 process.on('SIGINT', () => {
 	console.log('Stopping server');
+	shutdown=true;
 	
 	botMethods.saveTable(QueueTable, client).then(_=>{
 		client.destroy().then(_=>{
@@ -702,6 +703,7 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
 	console.log('Stopping server');
+	shutdown=true;
 	
 	botMethods.saveTable(QueueTable, client).then(_=>{
 		client.destroy().then(_=>{
