@@ -1,5 +1,5 @@
 // Settings
-const useDB=false;
+const useDB=true;
 
 // Set up 
 if(useDB){
@@ -13,6 +13,7 @@ if(useDB){
 	dbconnect.connect();
 	
 	dbconnect.query('CREATE TABLE IF NOT EXISTS preferences (id bigint PRIMARY KEY, datum json);', (err, res) => {});
+	dbconnect.query('CREATE TABLE IF NOT EXISTS temp (idt bigint PRIMARY KEY, datumt json);', (err, res) => {});
 }
 else
 	var fs = require('fs');
@@ -45,10 +46,49 @@ exports.saveTableData = async function (data){
 	//Data is in the form of a JSON object with the channel IDs as the keys
 	
 	if(useDB){
-		//Deal with DB here
+		
+		// Clear the temp table
+		let text='DELETE FROM temp;'
+		let vals=[];
+		
+		await dbconnect.query(text).catch(err=>{throw err});
+		
+		// Dissassemble Queues into indivital channels, then save each the created temp table
+		text = 'INSERT INTO temp (idt, datumt) VALUES ($1, $2);';
+		
+		for(let x in data){
+			vals=[x, JSON.stringify(data[x])];
+			
+			dbconnect.query(text, vals).catch(err=>{});
+		}
 	}
 	else{
 		return await fs.promises.writeFile('temp.json', JSON.stringify(data)).then(_=>{return true;}).catch(err=>{throw err;});
+	}
+}	
+
+// Loads the previously saved Queue data
+exports.loadTableData = async function (){
+	//Data is in the form of a JSON object with the channel IDs as the keys
+	
+	if(useDB){
+		let result={};
+		
+		let text='SELECT idt, datumt FROM temp;';
+
+		await dbconnect.query(text).then(data=>{
+			if(data.rows.length==0)
+				return;
+
+			for(let y=0;y<data.rows.length;y++)
+				result[data.rows[y].idt]=data.rows[y].datumt;
+			
+		}).catch(err => {throw err});
+		
+		return result;
+	}
+	else{
+		return await fs.promises.readFile('temp.json', 'utf8').then(data=>{return JSON.parse(data);}).catch(err=>{return {};});
 	}
 }	
 

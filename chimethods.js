@@ -155,9 +155,59 @@ exports.saveTable = function (table, client){
 	});
 }
 
+// Loads the last known set of Queues if it exists
+exports.loadTable = function (table, client){
+	
+	let internalTableBase = this.queueBase;
+	let internalSetSettings  = this.setSettings;
+	
+	let compChn = function (chn, clientn){
+		return clientn.channels.get(chn);
+	}
+	
+	let compUser = function (id, chn){
+		return chn.members.get(id);
+	}
+	
+	return new Promise( async function (resolve, reject) {
+		try{
+			// Get the table info from file
+			let tablebase = await io.loadTableData().catch(er => {throw er;});
+
+			// Fill the missing data from the stripped down version
+			for(let x in tablebase){
+				
+				let sx=compChn(x, client);
+										
+				table[sx]={};
+					
+				let own=compUser(tablebase[x].owner,sx);
+				
+				table[sx] = internalTableBase({author:own});
+				internalSetSettings(table[sx], tablebase[x].settings);
+				
+				table[sx].open=tablebase[x].open;
+				table[sx].userTrack=tablebase[x].userTrack;
+					
+				// Add user IDs back into tyhe Queue
+				for(let y=0;y<tablebase[x].queued.length;y++){
+					table[sx].queued.push(compUser(table[x].queued[y], sx));
+				}
+
+				sx.send("There we go. Continue as you were.");
+			}
+			
+			resolve(true);
+		}
+		catch(err){
+			reject(err);
+		}
+	});
+}
+
 // Returns true iff the user is the owner of a given channel's Queue
 exports.isOwner = function (msg, table){
-	return table[msg.channel].owner==msg.author;
+	return table[msg.channel].owner.id==msg.author.id;
 }
 
 // Returns the index of their ban iff the user is banned from a given channel, -1 if not banned.

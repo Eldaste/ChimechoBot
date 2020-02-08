@@ -24,6 +24,7 @@ const fs = require('fs');
 
 // Set up defaults
 const prefix='.';
+const rebootlag=5000;
 const errorFile="errorfile.log";
 //const transferFile="temp.json";
 
@@ -41,8 +42,12 @@ var DMTable={};
 // Set up the shutdown listener
 var shutdown = false;
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
+	
+	await new Promise(resolve => setTimeout(resolve, rebootlag));
+	
+	botMethods.loadTable(QueueTable, client);
 });
 
 
