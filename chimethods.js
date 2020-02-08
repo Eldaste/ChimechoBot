@@ -192,9 +192,8 @@ exports.loadTable = function (table, client){
 				// Add user IDs back into tyhe Queue
 				for(let y=0;y<tablebase[x].queued.length;y++){
 					let user=compUser(tablebase[x].queued[y], sx);
-					table[sx].queued.push(user);
 					
-					sx.send(user);
+					table[sx].queued.push(user);
 				}
 
 				sx.send("There we go. Continue as you were.");
