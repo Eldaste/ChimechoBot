@@ -1,5 +1,5 @@
 // Set authentication method and if whitelist or blacklist
-const useAuthFile=false;
+const useAuthFile=true;
 const useWhitelist=false;
 
 // Import required libraries
