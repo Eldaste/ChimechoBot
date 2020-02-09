@@ -1,3 +1,6 @@
+// Create datawriter
+const io=require('./datawriter.js');
+
 // Set up defaults
 const defaultNum=3;
 const defaultDuplication=false;
@@ -96,34 +99,117 @@ exports.setSettings = function (queue, settings){
 
 // Save a User's settings if able
 // Returns true if able, false otherwise
-exports.saveSettings = function (user, settings, fs){
+exports.saveSettings = async function (user, settings){
 	
-	let path = "./User_Preferences/"+user.id+".json";
-
-	fs.writeFile (path, JSON.stringify(settings), function(err) {if(err) return false;});
-	
-	return true;
+	return await io.saveUserPref(user, settings);
 }
 
 // Retrieve a User's settings if able
-exports.readSettings = function (user, fs){
+exports.readSettings = async function (user){
 	
-	let result = {};
+	return await io.readUserPref(user);
+}
+
+// Returns a promise to write the given table to memory
+exports.saveTable = function (table, client){
 	
-	let path = "./User_Preferences/"+user.id+".json";
+	let internalGetSettings = this.getSettings;
+	
+	let stripChn = function (chn){
+		return chn.replace(/[\\<>@#&!]/g, "");
+	}
+	
+	return new Promise( async function (resolve, reject) {
+		try{
+			let striptable={};
 
-	try{
-		let data=fs.readFileSync(path);
-		result = JSON.parse(data); 
+			// Strip the empty Queues, and save only user IDs rather than full user data
+			for(let x in table)
+				if(table[x]!=undefined){
+					
+					let sx=stripChn(x);
+					
+					await client.channels.get(sx).send("Hold on, I need to reorganize.");
+					
+					striptable[sx]={};
+					
+					striptable[sx].settings=internalGetSettings(table[x]);
+					striptable[sx].owner=table[x].owner.id;
+					striptable[sx].open=table[x].open;
+					striptable[sx].userTrack=table[x].userTrack;
+					striptable[sx].queued=[];
+					
+					// Strip user IDs from those in Queue
+					for(let y=0;y<table[x].queued.length;y++){
+						striptable[sx].queued.push(table[x].queued[y].id);
+					}
+				}
+				
+			await io.saveTableData(striptable).catch(er => {throw er;});
+			
+			resolve(true);
+		}
+		catch(err){
+			reject(err);
+		}
+	});
+}
 
-	} catch(err){} // Catches the error of the file not existing
+// Loads the last known set of Queues if it exists
+exports.loadTable = function (table, client){
+	
+	let internalTableBase = this.queueBase;
+	let internalSetSettings  = this.setSettings;
+	
+	let compChn = function (chn, clientn){
+		return clientn.channels.get(chn);
+	}
+	
+	let compUser = function (id, chn){
+		return chn.members.get(id);
+	}
+	
+	return new Promise( async function (resolve, reject) {
+		try{
+			// Get the table info from file
+			let tablebase = await io.loadTableData().catch(er => {throw er;});
 
-	return result;
+			// Fill the missing data from the stripped down version
+			for(let x in tablebase){
+				
+				let sx=compChn(x, client);
+										
+				table[sx]={};
+					
+				let own=compUser(tablebase[x].owner,sx);
+				
+				table[sx] = internalTableBase({author:own});
+				internalSetSettings(table[sx], tablebase[x].settings);
+				
+				table[sx].open=tablebase[x].open;
+				table[sx].userTrack=tablebase[x].userTrack;
+					
+				// Add user IDs back into tyhe Queue
+				for(let y=0;y<tablebase[x].queued.length;y++){
+					let user=compUser(tablebase[x].queued[y], sx);
+					
+					table[sx].queued.push(user);
+				}
+
+				sx.send("There we go. Continue as you were.");
+			}
+			
+			resolve(true);
+		}
+		catch(err){
+			reject(err);
+		}
+	});
 }
 
 // Returns true iff the user is the owner of a given channel's Queue
 exports.isOwner = function (msg, table){
-	return table[msg.channel].owner==msg.author;
+	return table[msg.channel].owner.id==msg.author.id;
 }
 
 // Returns the index of their ban iff the user is banned from a given channel, -1 if not banned.
@@ -222,7 +308,7 @@ exports.clearIfEmpty = function (msg, table, chn){
 exports.findUser = function (msg, table){
 	
 	for(let x=0; x<table[msg.channel].queued.length;x++)
-		if(table[msg.channel].queued[x]==msg.author)
+		if(table[msg.channel].queued[x].id==msg.author.id)
 			return x;	
 
 	return -1;
@@ -232,7 +318,7 @@ exports.findUser = function (msg, table){
 exports.isEnqueued = function (msg, table){
 
 	for(let x of table[msg.channel].queued)
-		if(x==msg.author)
+		if(x.id==msg.author.id)
 			return true;
 
 	return false;

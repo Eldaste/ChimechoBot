@@ -1,6 +1,6 @@
 {
  "name": "chimechobot",
- "version": "3.7.5",
+ "version": "4.0.0",
  "description": "Bot for organizing Pokemon Max Raids",
  "main": "bot.js",
  "scripts": {
@@ -10,6 +10,7 @@
  "author": "github.com/Eldaste",
  "license": "ISC",
  "dependencies": {
-   "discord.js": "^11.5.1"
+  "discord.js": "^11.5.1",
+  "pg": "^7.18.1"
  }
 }
