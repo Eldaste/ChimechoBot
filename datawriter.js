@@ -1,5 +1,5 @@
 // Settings
-const useDB=false;
+const useDB=true;
 
 // Set up 
 if(useDB){
