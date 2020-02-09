@@ -4,5 +4,6 @@
 "3.7.0":"Added configuration options attempts and openattempt\nAdded current under configureQ",
 "3.7.2":"Added channel orgin to sent codes for use when a user joins multiple Queues.",
 "3.7.3":"Case insensitized commands.",
-"3.7.5":"Added whitelist support."
+"3.7.5":"Added whitelist support.",
+"4.0.0":"Added database support."
 }
