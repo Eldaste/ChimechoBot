@@ -362,6 +362,18 @@ exports.isFilled = function (msg, table){
 
 } 
 
+// Assembles a string containing mentions of all IDs passed
+exports.stringifyIDs = function (ids){
+	
+	let res='';
+	
+	for(let x of ids){
+		res+='<@'+x+'> ';
+	}
+	
+	return res;
+}
+
 // Creates a DMTable entry with all fields set to the provided values
 exports.dmBase = function (chn, code){
 	return {queue:chn, allowed:allowDM, lastcode: code};

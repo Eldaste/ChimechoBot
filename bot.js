@@ -199,8 +199,7 @@ client.on('message', async msg => {
 				break;
 
 
-			case 'moddelete': // Removes the Queue if sent by a mod of the server
-			      // Intended to clear channels left locked by absent owners
+			case 'mod': // Commands only usable by mods of the server, these commands ignore owner
 				if(!botMethods.hasQueue(msg, QueueTable)){
 					msg.reply("No active Queue.");
 					break;
@@ -209,9 +208,65 @@ client.on('message', async msg => {
 					msg.reply("Invalid Permissions.");
 					break;
 				}
+				if(args.length == 0){
+					msg.reply("What would like to do? Use \".mod help\" for available options.");
+					break;
+				}
 
-				QueueTable[msg.channel]=undefined;
-				msg.reply("Queue cleared.");
+				switch(args[0].toLowerCase()) {
+					
+					case 'delete': // Deletes the Queue
+						QueueTable[msg.channel]=undefined;
+						msg.reply("Queue cleared.");
+						
+						break;
+						
+					case 'view': // Sends the mod the Queue
+						if(QueueTable[msg.channel].queued.length==0){
+							msg.author.send("Queue is empty.");
+							break;
+						}
+				
+						msg.author.send(QueueTable[msg.channel].queued);
+						
+						break;
+						
+					case 'viewjoined': // Sends a list of all unique uses that have been sent a code
+						let tempt=[];
+						
+						for(let poss in QueueTable[msg.channel].userTrack){
+							tempt.push(poss);
+						}
+						
+						if(tempt.length==0){
+							msg.author.send('No user has been sent a code yet.');
+							break;
+						}
+						
+						msg.author.send(botMethods.stringifyIDs(tempt));
+						
+						break;
+						
+					case 'kick':
+					case 'boot': // Kick a user from the Queue
+						if(args.length == 1){
+							msg.reply("Who would you like to kick? Kicking needs a command of the form "+prefix+"boot <user>.");
+							break;
+						}
+
+						if(botMethods.kickUser(msg, args[1], QueueTable))
+							msg.reply(args[1]+" has been kicked.");
+						else
+							msg.reply(args[1]+" was not in the Queue.");
+
+						break;
+						
+					case 'help': // Displays the mod help menu
+	
+						msg.channel.send(definitionsFile.modhelptext);
+
+						break;
+				}
 				
 				break;
 
@@ -481,6 +536,7 @@ client.on('message', async msg => {
 
 	    break;*/
 
+			case 'ugg':
 			case 'boot': // Kicks all instances of the user from the Queue
 				if(!botMethods.hasQueue(msg, QueueTable)){
 					msg.reply("No active Queue.");
@@ -502,6 +558,7 @@ client.on('message', async msg => {
 
 				break;
 
+			case 'yeet':
 			case 'ban': // Kicks all instances of the user from the Queue and prevents them from joining. Saved in .save
 				if(!botMethods.hasQueue(msg, QueueTable)){
 					msg.reply("No active Queue.");
@@ -549,6 +606,23 @@ client.on('message', async msg => {
 				}
 				else
 					msg.reply(args[0]+" was not banned.");
+
+				break;
+				
+			case 'viewbans': // Sends the owner a list of who they have banned
+				if(!botMethods.hasQueue(msg, QueueTable)){
+					msg.reply("No active Queue.");
+					break;
+				}
+				if(!botMethods.isOwner(msg, QueueTable)){
+					msg.reply("Invalid Permissions.");
+					break;
+				}
+
+				if(QueueTable[msg.channel].banlist.length==-1)
+					msg.author.send('You have no bans.');
+				else
+					msg.author.send(botMethods.stringifyIDs(QueueTable[msg.channel].banlist));
 
 				break;
 
