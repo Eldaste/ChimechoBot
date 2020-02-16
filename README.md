@@ -2,9 +2,6 @@
 
 Discord queue bot for hosting max raids in Pokémon SwSh.
 
-Try it out here: https://discord.gg/44j5GBg
-
-
 ## Installation
 
 1. Clone this repo
@@ -75,7 +72,8 @@ Users can also run `.numQ` by DMing ChimechoBot once they've run it in the chann
 ### Other commands
 - `.version` - Returns ChimechoBot's current version.
 - `.activeQueues` - Returns the number of current queues.
-- `.diagnose` - Sends errorlogfile. Can only be used by DMing ChimechoBot.
+- `.mod` - Moderator specific commands.
+- `diagnose` - Sends errorlogfile. Can only be used by DMing ChimechoBot.
 
 
 ## Additional info
