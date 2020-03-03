@@ -6,5 +6,6 @@
 "3.7.3":"Case insensitized commands.",
 "3.7.5":"Added whitelist support.",
 "4.0.0":"Added database support.",
-"4.1.0":"Added .viewBans\nExpanded mod commands."
+"4.1.0":"Added .viewBans\nExpanded mod commands.",
+"4.1.1":"Added .countQ to the help menu."
 }
