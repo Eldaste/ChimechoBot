@@ -752,6 +752,28 @@ client.on('message', async msg => {
 						msg.channel.send(definitionsFile.configurehelptext);
 
 						break;
+						
+					case 'enablecount': // Sends the number of users that joined
+						
+						if(!botMethods.isMod(msg, definitionsFile.modNames) && !botMethods.hasRole(msg, 'Max Host'))
+							break;
+						
+						QueueTable[msg.channel].sendafter=true;
+
+						msg.reply("You will be sent the number of joining users.");
+						
+						break;
+						
+					case 'disablecount': // No longer sends the number of users that joined
+						
+						if(!botMethods.isMod(msg, definitionsFile.modNames) && !botMethods.hasRole(msg, 'Max Host'))
+							break;
+						
+						QueueTable[msg.channel].sendafter=false;
+
+						msg.reply("You will not be sent the number of joining users.");
+						
+						break;
 	
 				} // End configure switch
 

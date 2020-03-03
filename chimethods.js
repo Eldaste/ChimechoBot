@@ -9,6 +9,7 @@ const defaultMaxPlayers=-1;
 const defaultSendUseList=false;
 const defaultUseJoinReact=true;
 const defaultmaxAttempts=-1;
+const defaultSendAfter=false;
 
 // Returns true if a Queue is active in the given channel
 exports.hasQueue = function (msg, table){
@@ -20,7 +21,8 @@ exports.hasQueue = function (msg, table){
 exports.queueBase = function (msg){
 	return {queued:[], owner:msg.author, size:defaultNum, dupes:defaultDuplication, 
 		open:true, maxplayers:defaultMaxPlayers, banlist:[], sendUseList:defaultSendUseList,
-		useJoinReact:defaultUseJoinReact, userTrack:{}, maxAttempts:defaultmaxAttempts};
+		useJoinReact:defaultUseJoinReact, userTrack:{}, maxAttempts:defaultmaxAttempts,
+		sendafter:defaultSendAfter};
 }
 
 // Takes a QueueTable entry and creates a SettingsDictionary for it
@@ -45,6 +47,9 @@ exports.getSettings = function (queue){
 	
 	if(queue.maxAttempts != defaultmaxAttempts)
 		base.maxAttempts=queue.maxAttempts;
+	
+	if(queue.sendafter != defaultSendAfter)
+		base.sendafter=queue.sendafter;
 	
 	if(queue.banlist.length!=0)
 		base.banlist=queue.banlist;
@@ -86,6 +91,11 @@ exports.setSettings = function (queue, settings){
 	if(settings.maxAttempts!=undefined && queue.maxAttempts != settings.maxAttempts){
 		base.maxAttempts=settings.maxAttempts;
 		queue.maxAttempts=settings.maxAttempts;
+	}
+
+	if(settings.sendafter!=undefined && queue.sendafter != settings.sendafter){
+		base.sendafter=settings.sendafter;
+		queue.sendafter=settings.sendafter;
 	}
 
 
@@ -247,6 +257,21 @@ exports.isMod = function (msg, modNames){
 	return false;
 }
 
+// Returns true iff the user has a given role in a given channel
+exports.hasRole = function (msg, role){
+
+	let roleList = msg.guild.roles.array();
+		
+	for(let x in roleList)
+		if(role == roleList[x].name){
+			if (msg.member.roles.has(roleList[x].id))
+				return true;
+			return false;
+		}
+
+	return false;
+}
+
 // Returns a string representing the current configuration in readable English
 exports.stringifyConfig = function (config, table, msg){
 
@@ -284,6 +309,12 @@ exports.stringifyConfig = function (config, table, msg){
 				replyms+=" times. ";
 		}
 	}
+	if(config.sendafter!=undefined){
+		if(config.sendafter)
+			replyms+="You will be notified of how many people join. ";
+		else
+			replyms+="You will not be notified of how many people join. ";
+	}
 	if(config.banlist!=undefined) replyms+="You have "+config.banlist.length+" users banned. ";
 
 	return replyms;
@@ -294,7 +325,11 @@ exports.stringifyConfig = function (config, table, msg){
 exports.clearIfEmpty = function (msg, table, chn){
 
 	if(0 == table[chn].queued.length){
+		
 		msg.author.send("Queue cleared.");
+		if(table[chn].sendafter)
+			msg.author.send(Object.keys(table[chn].userTrack).length+ " unique users joined.");
+		
 		chn.send("Queue cleared.");
 		table[chn]=undefined;
 
