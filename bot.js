@@ -250,7 +250,7 @@ client.on('message', async msg => {
 					case 'kick':
 					case 'boot': // Kick a user from the Queue
 						if(args.length == 1){
-							msg.reply("Who would you like to kick? Kicking needs a command of the form "+prefix+"boot <user>.");
+							msg.reply("Who would you like to kick? Kicking needs a command of the form boot <user>.");
 							break;
 						}
 
@@ -261,6 +261,35 @@ client.on('message', async msg => {
 
 						break;
 						
+					case 'echo': // Send a message in the designated channel
+						if(args.length == 1){
+							msg.reply("Where would you like to send a message? Echo needs a command of the form echo <channel> <message>.");
+							break;
+						}
+						if(args.length == 2){
+							msg.reply("What message would you like to send? Echo needs a command of the form echo <channel> <message>.");
+							break;
+						}
+						
+						let tar = args[1].replace(/[\\<>@#&!]/g, "");
+						let tocom = args.splice(2);
+						tocom = tocom.join(' ');
+						
+						client.channels.get(tar).send(tocom);
+						
+						break;
+					case 'observe': // Send owner to requester
+						msg.author.send("Owner: " + QueueTable[msg.channel].owner);
+						
+						break;
+					case 'reload': // Reloads from tempfile, for use in odd cases of reboot failure
+						botMethods.loadTable(QueueTable, client).then(_=>{msg.channel.send('Tables reloaded.');}).catch(_=>{msg.channel.send('Tables failed to reload.');});
+						
+						break;
+					case 'cleartmp': // Clears the tempfile
+						botMethods.saveTable({}, client).then(_=>{msg.channel.send('External cache cleared.');}).catch(_=>{msg.channel.send('Error clearing cache.');});
+							
+						break;
 					case 'help': // Displays the mod help menu
 	
 						msg.channel.send(definitionsFile.modhelptext);
