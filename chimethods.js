@@ -135,7 +135,7 @@ exports.saveTable = function (table, client){
 
 			// Strip the empty Queues, and save only user IDs rather than full user data
 			for(let x in table)
-				if(table[x]!=undefined){
+				if(table[x]!=undefined && table[x].owner!=undefined){
 					
 					let sx=stripChn(x);
 					
@@ -151,7 +151,8 @@ exports.saveTable = function (table, client){
 					
 					// Strip user IDs from those in Queue
 					for(let y=0;y<table[x].queued.length;y++){
-						striptable[sx].queued.push(table[x].queued[y].id);
+						if(table[x].queued[y]!=undefined)
+							striptable[sx].queued.push(table[x].queued[y].id);
 					}
 				}
 				
@@ -188,10 +189,13 @@ exports.loadTable = function (table, client){
 			for(let x in tablebase){
 				
 				let sx=compChn(x, client);
-										
-				table[sx]={};
 					
 				let own=compUser(tablebase[x].owner,sx);
+				
+				if(own == undefined)
+					continue;
+										
+				table[sx]={};
 				
 				table[sx] = internalTableBase({author:own});
 				internalSetSettings(table[sx], tablebase[x].settings);
@@ -203,7 +207,8 @@ exports.loadTable = function (table, client){
 				for(let y=0;y<tablebase[x].queued.length;y++){
 					let user=compUser(tablebase[x].queued[y], sx);
 					
-					table[sx].queued.push(user);
+					if(user!=undefined)
+						table[sx].queued.push(user);
 				}
 
 				sx.send("There we go. Continue as you were.");
@@ -475,6 +480,9 @@ exports.createGroup = function (msg, table, dmtable, fromdm){
 	for(var i=0;i<table[chn].size;i++){
 		// Get a user 
 		let user=table[chn].queued.shift();
+		
+		while(user == undefined)
+			user=table[chn].queued.shift();
 	
 		if(table[chn].sendUseList)
 			totaltext+=user+" ";

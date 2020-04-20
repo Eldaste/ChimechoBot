@@ -818,7 +818,6 @@ client.on('message', async msg => {
 	try{time=new Date().toGMTString();}
 	catch(er){}
 
-	let errmess = time+":\n"+err+"\n\n";
 
  	fs.appendFile(errorFile, errmess, (erro) => {
  		// If there's a problem writing errors, just silently suffer
