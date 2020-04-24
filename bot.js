@@ -348,7 +348,7 @@ client.on('message', async msg => {
 					break;
 				}
 				if(botMethods.checkBan(msg.author.id, QueueTable[msg.channel].banlist)!=-1){
-					msg.reply("You are currently banned from this host's raid queues.");
+					msg.reply("You are currently blocked from joining this host's queues.");
 					break;
 				}
 				if(!botMethods.attemptAvailable(msg, QueueTable)){
@@ -588,6 +588,7 @@ client.on('message', async msg => {
 				break;
 
 			case 'yeet':
+			case 'block':
 			case 'ban': // Kicks all instances of the user from the Queue and prevents them from joining. Saved in .save
 				if(!botMethods.hasQueue(msg, QueueTable)){
 					msg.reply("No active Queue.");
@@ -598,7 +599,7 @@ client.on('message', async msg => {
 					break;
 				}
 				if(args.length == 0){
-					msg.reply("Who would you like to ban? Banning needs a command of the form "+prefix+"ban <user>.");
+					msg.reply("Who would you like to block? Blocking needs a command of the form "+prefix+"block <user>.");
 					break;
 				}
 
@@ -608,11 +609,12 @@ client.on('message', async msg => {
 		
 				if(botMethods.checkBan(userstrip, QueueTable[msg.channel].banlist)==-1){
 					QueueTable[msg.channel].banlist.push(userstrip);
-					msg.reply(args[0]+" has been banned. Remember to .save to keep your bans.");
+					msg.reply(args[0]+" has been blocked. Remember to .save to keep your blocks.");
 				}
 
 				break;
 
+			case 'unblock':
 			case 'unban': // Unbans a user
 				if(!botMethods.hasQueue(msg, QueueTable)){
 					msg.reply("No active Queue.");
@@ -623,7 +625,7 @@ client.on('message', async msg => {
 					break;
 				}
 				if(args.length == 0){
-					msg.reply("Who would you like to unban? Unbanning needs a command of the form "+prefix+"unban <user>.");
+					msg.reply("Who would you like to unblock? Unblocking needs a command of the form "+prefix+"unblock <user>.");
 					break;
 				}
 
@@ -631,13 +633,14 @@ client.on('message', async msg => {
 
 				if(xy!=-1){
 					QueueTable[msg.channel].banlist.splice(xy,1);
-					msg.reply(args[0]+" has been unbanned. Remember to .save to keep your bans.");
+					msg.reply(args[0]+" has been unblocked. Remember to .save to keep your blocks.");
 				}
 				else
-					msg.reply(args[0]+" was not banned.");
+					msg.reply(args[0]+" was not blocked.");
 
 				break;
 				
+			case 'viewblocks':
 			case 'viewbans': // Sends the owner a list of who they have banned
 				if(!botMethods.hasQueue(msg, QueueTable)){
 					msg.reply("No active Queue.");
@@ -649,7 +652,7 @@ client.on('message', async msg => {
 				}
 
 				if(QueueTable[msg.channel].banlist.length==-1)
-					msg.author.send('You have no bans.');
+					msg.author.send('You have no blocks.');
 				else
 					msg.author.send(botMethods.stringifyIDs(QueueTable[msg.channel].banlist));
 
