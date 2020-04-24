@@ -320,7 +320,7 @@ exports.stringifyConfig = function (config, table, msg){
 		else
 			replyms+="You will not be notified of how many people join. ";
 	}
-	if(config.banlist!=undefined) replyms+="You have "+config.banlist.length+" users banned. ";
+	if(config.banlist!=undefined) replyms+="You have "+config.banlist.length+" users blocked. ";
 
 	return replyms;
 }
