@@ -630,11 +630,7 @@ exports.initPoints = async function(guild){
 // If message does not exist, returns false and clears from listeners
 exports.retrieveMessage = async function(bot, cachechunk, name){
 	if(cachechunk.messagecache[name] != undefined){
-		/*let r = await cachechunk.messagecache[name].fetch().catch(err => {
-			console.log(err.stack);
-			return false;});*/
 		r = cachechunk.messagecache[name];
-		//console.log(r.deleted);
 		if(r.deleted){
 			for(let x in cachechunk.state.messages[name].components)
 				cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.splice(
@@ -643,7 +639,6 @@ exports.retrieveMessage = async function(bot, cachechunk, name){
 			cachechunk.state.messages[name] = undefined;
 			return false;
 		}
-		//console.log(r);
 		return r;
 	}
 	let temp = cachechunk.state.messages[name];
@@ -652,7 +647,6 @@ exports.retrieveMessage = async function(bot, cachechunk, name){
 	let res = bot.channels.get(temp.channel);
 	try{
 		res = await res.fetchMessage(temp.id);
-		//console.log(res.deleted);
 	}
 	catch(delerr){
 		console.log('Working');
@@ -673,7 +667,6 @@ exports.retrieveMessage = async function(bot, cachechunk, name){
 		return false;
 	}
 	cachechunk.messagecache[name] = res;
-	//console.log(res);
 	return res;
 }
 
@@ -752,7 +745,6 @@ exports.modifyPoints = async function(bot, guild, name, value, set){
 		let collatedarray = datadata[currname].listeners.messages;
 		for(let x in datadata[currname].listeners.data)
 			collatedarray = collatedarray.concat(updateWalker(datadata, datadata[currname].listeners.data[x]));
-		//console.log(currname + ' '+ collatedarray);
 		return collatedarray;
 	}
 	
@@ -768,7 +760,6 @@ exports.modifyPoints = async function(bot, guild, name, value, set){
 		}
 		try{
 			k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data));
-			//await k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data)).then(_=>console.log('S')).catch(_=>console.log('V'));
 		}
 		catch(err){
 			pointss.messagecache[y] = undefined;
@@ -839,7 +830,6 @@ exports.delPoints = async function(bot, guild, name){
 				continue;
 			try{
 				k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data));
-				//await k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data)).then(_=>console.log('SD')).catch(_=>console.log('VD'));
 			}
 			catch(err){
 				pointss.messagecache[y] = undefined;
