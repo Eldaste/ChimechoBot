@@ -132,7 +132,7 @@ exports.loadPoints = function (guild){
 				throw new Error('No data found');
 
 			return data.rows[0].datum;
-		}).catch(err=>{console.log(err.stack);});
+		});
 	}
 	else{	
 		let path = "./Point_System/"+guild+".json";
