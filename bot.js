@@ -142,7 +142,7 @@ client.on('message', async msg => {
     } // End DM handle
 
     // If using the Whitelist, check if channel is on it
-	if (useWhitelist)
+	if (useWhitelist && !message.startsWith(prefix + 'point'))
 		if (channelWhitelist.indexOf(msg.channel.id) == -1)
 			return;
 
@@ -297,6 +297,80 @@ client.on('message', async msg => {
 						break;
 				}
 				
+				break;
+				
+			case 'point': // Commands for point manipulations		
+				if(!botMethods.isMod(msg, definitionsFile.modNames)){
+					break;
+				}
+				if(args.length == 0){
+					msg.reply("What would like to do?");
+					break;
+				}
+				
+				switch(args[0].toLowerCase()){
+					case 'init': // Needs to be called before anything else
+						try{
+							await botMethods.initPoints(msg.guild.id);
+							msg.reply('Points initalized.');
+						}
+						catch(e){
+							msg.reply('Points either already initalized or an error occurred.');
+						}
+						break;
+					case 'create': // Create a base level point counter
+						if(args.length == 1){
+							msg.reply("What name would you like it to have?");
+							break;
+						}
+						if(await botMethods.createPoints(client, msg.guild.id, args[1], 0) != false)
+							msg.reply('Points counter created.');
+						break;
+					case 'define': // Create a conglomerate point counter
+						if(args.length < 3){
+							msg.reply("Define takes at least 2 arguments.");
+							break;
+						}
+						if(await botMethods.createPoints(client, msg.guild.id, args[1], args.splice(2)) != false)
+							msg.reply('Compound points counter created.');
+						break;
+					case 'delete': // Remove a point counter
+						if(args.length == 1){
+							msg.reply("What counter would you like to delete?");
+							break;
+						}
+						if(await botMethods.delPoints(client, msg.guild.id, args[1]) != false)
+							msg.reply('Points counter deleted.');
+						break;
+					case 'award': // Increment a counter
+						if(args.length < 3){
+							msg.reply("Award takes 2 arguments.");
+							break;
+						}
+						if(await botMethods.modifyPoints(client, msg.guild.id, args[1], args[2], false) != false)
+							msg.reply('Points awarded.');
+						break;
+					case 'set': // Set a counter
+						if(args.length < 3){
+							msg.reply("Set takes 2 arguments.");
+							break;
+						}
+						if(await botMethods.modifyPoints(client, msg.guild.id, args[1], args[2], true) != false)
+							msg.reply('Points set.');
+						break;
+					case 'display': // Displays the given points
+						if(args.length < 3){
+							msg.reply("Display takes at least 2 arguments.");
+							break;
+						}
+						await botMethods.displayPoints(msg, args[1], args.splice(2));
+						break;
+					case 'help': // Displays the point help menu
+	
+						msg.channel.send(definitionsFile.pointhelptext);
+
+						break;
+				}			
 				break;
 
 			case 'closeq': // Closes Queue to further joins and deletes the Queue if empty
@@ -862,6 +936,7 @@ process.on('SIGTERM', () => {
 
 // Ensure that the filesystem exists for user preferences
 fs.mkdir('./User_Preferences', err => {if (err && err.code != 'EEXIST') throw 'up'});
+fs.mkdir('./Point_System', err => {if (err && err.code != 'EEXIST') throw 'up'});
 
 if(useAuthFile)
 	client.login(auth.token);
