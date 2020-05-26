@@ -13,6 +13,7 @@ if(useDB){
 	dbconnect.connect();
 	
 	dbconnect.query('CREATE TABLE IF NOT EXISTS preferences (id bigint PRIMARY KEY, datum json);', (err, res) => {});
+	dbconnect.query('CREATE TABLE IF NOT EXISTS pointtable (id bigint PRIMARY KEY, datum json);', (err, res) => {});
 	dbconnect.query('CREATE TABLE IF NOT EXISTS temp (idt bigint PRIMARY KEY, datumt json);', (err, res) => {});
 }
 else
@@ -117,4 +118,51 @@ exports.readUserPref = async function (user){
 	}
 	
 	return result;
+}
+
+// Retrieve Points data for a specific guild
+exports.loadPoints = function (guild){
+	if(useDB){
+		// Handle DB
+		let vals=[guild];
+		let text='SELECT id, datum FROM pointtable WHERE pointtable.id = $1;';
+
+		return dbconnect.query(text, vals).then(data=>{
+			if(data.rows.length==0)
+				throw new Error('No data found');
+
+			return data.rows[0].datum;
+		}).catch(err=>{console.log(err.stack);});
+	}
+	else{	
+		let path = "./Point_System/"+guild+".json";
+
+		return fs.promises.readFile(path, 'utf8').then(data=>{
+			let re=JSON.parse(data);
+			if(re.init == undefined)
+				throw new Error('No data found');
+			return re;}).catch(err=>{console.log(err.stack); throw err;});
+	}
+}
+
+// Saves points data for a specific guild
+exports.savePoints = async function (guild, table){
+	
+	if(useDB){
+		// Create values table
+		let vals=[guild];
+		let text='DELETE FROM pointtable WHERE pointtable.id = $1;';
+
+		await dbconnect.query(text, vals).then(data=>{}).catch(err=>{});
+
+		vals=[guild, JSON.stringify(table)];
+		text='INSERT INTO pointtable (id, datum) VALUES ($1, $2);';
+		
+		return dbconnect.query(text, vals);
+	}
+	else{
+		let path = "./Point_System/"+guild+".json";
+
+		return fs.promises.writeFile(path, JSON.stringify(table));
+	}
 }

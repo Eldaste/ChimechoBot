@@ -11,6 +11,8 @@ const defaultUseJoinReact=true;
 const defaultmaxAttempts=-1;
 const defaultSendAfter=false;
 
+pointsCache = {};
+
 // Returns true if a Queue is active in the given channel
 exports.hasQueue = function (msg, table){
 	return table[msg.channel]!=undefined;
@@ -596,3 +598,281 @@ exports.addMember = function (msg, table, dmtable, fromdm){
 		if(this.clearIfEmpty(msg, table, chn))
 			dmtable[msg.author] = undefined;
 }
+
+// Points Methods
+const Discord = require('discord.js');
+
+// Takes a guild ID and returns the pointcache for that ID, either loading or pulling from the cache
+exports.retrievePointsCache = async function(guild){
+	if(pointsCache[guild] != undefined)
+		return pointsCache[guild];
+	let temp = await io.loadPoints(guild);
+	let tt = {state: temp, messagecache: {}}
+	pointsCache[guild] = tt;
+	return tt;
+}
+
+// Initalizes a fresh data structure if none exists
+exports.initPoints = async function(guild){
+	try{
+		await this.retrievePointsCache(guild);
+	}
+	catch(err){
+		let temp = {messages: {}, data: {}, init: true}
+		let tt = {state: temp, messagecache: {}}
+		pointsCache[guild] = tt;
+		return io.savePoints(guild, temp);
+	}
+	throw new Error('Data already exists');
+}
+
+// Takes the link to the bot, a cachechunk, and message handle and returns a link to the message, pulling from cache if possible
+// If message does not exist, returns false and clears from listeners
+exports.retrieveMessage = async function(bot, cachechunk, name){
+	if(cachechunk.messagecache[name] != undefined){
+		/*let r = await cachechunk.messagecache[name].fetch().catch(err => {
+			console.log(err.stack);
+			return false;});*/
+		r = cachechunk.messagecache[name];
+		//console.log(r.deleted);
+		if(r.deleted){
+			for(let x in cachechunk.state.messages[name].components)
+				cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.splice(
+					cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.indexOf(name), 1);
+			cachechunk.messagecache[name] = undefined;
+			cachechunk.state.messages[name] = undefined;
+			return false;
+		}
+		//console.log(r);
+		return r;
+	}
+	let temp = cachechunk.state.messages[name];
+	if(temp == undefined)
+		return false;
+	let res = bot.channels.get(temp.channel);
+	try{
+		res = await res.fetchMessage(temp.id);
+		//console.log(res.deleted);
+	}
+	catch(delerr){
+		console.log('Working');
+		for(let x in cachechunk.state.messages[name].components)
+			cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.splice(
+				cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.indexOf(name), 1);
+		cachechunk.messagecache[name] = undefined;
+		cachechunk.state.messages[name] = undefined;
+		return false;
+	}
+	if(res.deleted){
+		console.log('Working');
+		for(let x in cachechunk.state.messages[name].components)
+			cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.splice(
+				cachechunk.state.data[cachechunk.state.messages[name].components[x]].listeners.messages.indexOf(name), 1);
+		cachechunk.messagecache[name] = undefined;
+		cachechunk.state.messages[name] = undefined;
+		return false;
+	}
+	cachechunk.messagecache[name] = res;
+	//console.log(res);
+	return res;
+}
+
+// Takes a messages entry (with at least name and components field), and the data block of the points cache and returns a formatted message 
+// Any components that do not exist are removed from the message components list.
+exports.createPointsMsg = function(message, data){
+	if(message == undefined)
+		return 'Counters cleared';
+	let ex = true;
+	let res = new Discord.RichEmbed().setTitle(message.name);
+	for(let x =0; x < message.components.length; x++){
+		let temp = data[message.components[x]];
+		if(temp == undefined){
+			message.components.splice(x,1);
+			x--;
+			continue;
+		}
+		res = res.addField(message.components[x], temp.value, true);
+		ex = false;
+	}
+	if(ex) return 'Counters cleared';
+	return res;
+}
+
+// Creates a new point counter. Can either be a composite counter or a new counter. 
+// Takes 4 arguments; the active bot, the guild ID, the name of the new counter, and the components/inital value
+// Returns a promise to the save state if the given named is added or false if not
+exports.createPoints = async function(bot, guild, name, initval){
+	let pointss = await this.retrievePointsCache(guild);
+	pointss = pointss.state;
+	let points = pointss.data;
+	
+	if(points[name] != undefined)
+		return false;
+	
+	if(isNaN(initval)){
+		let cu = 0;
+		for(let x in initval){
+			let nam = initval[x];
+			if(points[nam] == undefined)
+				return false;
+			cu += points[nam].value;
+		}
+		for(let x in initval){
+			let nam = initval[x];
+			points[nam].listeners.data.push(name);
+		}
+		
+		points[name] = {value: cu, components: initval, listeners: {data: [], messages:[]}};
+	}
+	else{
+		points[name] = {value: initval, listeners: {data: [], messages:[]}};
+	}
+	
+	return io.savePoints(guild, pointss);
+}
+
+// Modifies a point value, and updates any poiints in that value's listener list
+// Takes 5 arguments; the active bot, guildID, name of the counter to be modified, the value to modify by, and if it is to be set
+// Returns a promise to the save state if the given named is changed or false if not
+exports.modifyPoints = async function(bot, guild, name, value, set){
+	let pointss = await this.retrievePointsCache(guild);
+	
+	if(pointss.state.data[name] == undefined)
+		return false;
+	if(set)
+		value = value - pointss.state.data[name].value;
+	if(value == 0)
+		return false;
+	
+	// internal recursoive funtion to update all listeners, returns a list of message listeners
+	let updateWalker = function(datadata, currname){
+		datadata[currname].value = Number(datadata[currname].value) + Number(value);
+		if(datadata[currname].listeners.data.length == 0)
+			return datadata[currname].listeners.messages;
+		let collatedarray = datadata[currname].listeners.messages;
+		for(let x in datadata[currname].listeners.data)
+			collatedarray = collatedarray.concat(updateWalker(datadata, datadata[currname].listeners.data[x]));
+		//console.log(currname + ' '+ collatedarray);
+		return collatedarray;
+	}
+	
+	let walkingMes = updateWalker(pointss.state.data, name);
+	let updatedmes = [];
+	for(let n in walkingMes){
+		let y = walkingMes[n];
+		if(updatedmes.indexOf(y) != -1) continue;
+		let k = await this.retrieveMessage(bot, pointss, y);
+		if(k === false){
+			updatedmes.push(y);
+			continue;
+		}
+		try{
+			k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data));
+			//await k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data)).then(_=>console.log('S')).catch(_=>console.log('V'));
+		}
+		catch(err){
+			pointss.messagecache[y] = undefined;
+			await this.retrieveMessage(bot, pointss, y);
+		}
+		updatedmes.push(y);
+	}
+	
+	return io.savePoints(guild, pointss.state);
+}
+
+// Deletes a point counter
+// Takes 3 arguments; the active bot, guildID, name of the counter to be deleted
+// Returns a promise to the save state if the given named is deleted or false if not
+exports.delPoints = async function(bot, guild, name){
+	let pointss = await this.retrievePointsCache(guild);
+	
+	if(pointss.state.data[name] == undefined)
+		return false;
+	
+	return this.modifyPoints(bot, guild, name, 0, true).then(async _=>{
+		// Remove from any compound counters
+		for(let xy in pointss.state.data[name].listeners.data){
+			let x = pointss.state.data[name].listeners.data[xy];
+			try{
+				let xx = pointss.state.data[x].components.indexOf(name);
+				
+				while(xx != -1){
+					pointss.state.data[x].components.splice(xx, 1);
+					xx = pointss.state.data[x].components.indexOf(name);
+				}
+				
+				// If this was the last component of a compound counter, delete the compound counter
+				if(pointss.state.data[x].components.length == 0)
+					await this.delPoints(bot, guild, x);
+			}
+			catch(err){
+				console.log(err.stack);
+			}
+		}
+		
+		// If compound, remove from any listener lists
+		if(pointss.state.data[name].components != undefined){
+			for(let xy in pointss.state.data[name].components){
+				let x = pointss.state.data[name].components[xy];
+				try{
+					let xx = pointss.state.data[x].listeners.data.indexOf(name);
+				
+					while(xx != -1){
+						pointss.state.data[x].listeners.data.splice(xx, 1);
+						xx = pointss.state.data[x].listeners.data.indexOf(name);
+					}
+				}
+				catch(err){
+					console.log(err.stack);
+				}
+			}
+		}
+		
+		let temt = pointss.state.data[name].listeners.messages;
+		pointss.state.data[name] = undefined;
+		
+		// Remove from any message listeners, and clear from that message
+		for(let n in temt){
+			let y = temt[n];
+			let k = await this.retrieveMessage(bot, pointss, y);
+			if(k === false)
+				continue;
+			try{
+				k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data));
+				//await k.edit(this.createPointsMsg(pointss.state.messages[y], pointss.state.data)).then(_=>console.log('SD')).catch(_=>console.log('VD'));
+			}
+			catch(err){
+				pointss.messagecache[y] = undefined;
+				await this.retrieveMessage(bot, pointss, y);
+			}
+			if(pointss.state.messages[y].components.length == 0)
+				pointss.state.messages[y] = undefined;
+		}
+		
+		return io.savePoints(guild, pointss.state);
+	});
+}
+
+// Creates a visable representation of a points counter.
+// Takes 3 arguments; the calling message, a name, and a list of components
+exports.displayPoints = async function(msg, name, components){
+	let pointss = await this.retrievePointsCache(msg.guild.id);
+	let temp = {name: name, components: components};
+	let sendb = this.createPointsMsg(temp, pointss.state.data);
+	
+	let sent = await msg.channel.send(sendb);
+	
+	temp.id = sent.id;
+	temp.channel = sent.channel.id;
+	
+	let nme = temp.id + '.' +temp.channel;
+	
+	for(x in temp.components){
+		pointss.state.data[temp.components[x]].listeners.messages.push(nme);
+	}
+	
+	pointss.state.messages[nme] = temp;
+	
+	return io.savePoints(msg.guild.id, pointss.state);
+}
+
