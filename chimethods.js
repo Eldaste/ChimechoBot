@@ -743,6 +743,8 @@ exports.modifyPoints = async function(bot, guild, name, value, set){
 		value = value - pointss.state.data[name].value;
 	if(value == 0)
 		return false;
+	if(isNaN(value))
+		throw new TypeError('Setting a value takes a number.');
 	
 	// internal recursoive funtion to update all listeners, returns a list of message listeners
 	let updateWalker = function(datadata, currname){
