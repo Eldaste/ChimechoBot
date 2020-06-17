@@ -381,7 +381,7 @@ exports.findOtherUser = function (msg, user, table){
 // Returns a string containing a random number from 0000 to 9999
 exports.randomCode = function (){
 	
-	let coderaw=Math.floor(Math.random() * 10000);
+	let coderaw=Math.floor(Math.random() * 100000000);
 	
 
 	let code=""+coderaw;
@@ -390,6 +390,10 @@ exports.randomCode = function (){
 	if(coderaw<10) code="0"+code;
 	if(coderaw<100) code="0"+code;
 	if(coderaw<1000) code="0"+code;
+	if(coderaw<10000) code="0"+code;
+	if(coderaw<100000) code="0"+code;
+	if(coderaw<1000000) code="0"+code;
+	if(coderaw<10000000) code="0"+code;
 
 	return code;
 }
