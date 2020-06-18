@@ -395,6 +395,8 @@ exports.randomCode = function (){
 	if(coderaw<1000000) code="0"+code;
 	if(coderaw<10000000) code="0"+code;
 
+	code = code.substr(0, 4) + '-' + code.substr(4);
+	
 	return code;
 }
 
