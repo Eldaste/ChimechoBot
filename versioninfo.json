@@ -12,5 +12,6 @@
 "4.2.1":"Stability improvements.",
 "4.3.0":"Added .points",
 "4.3.1":"Updated to 8 digit codes",
-"4.3.2":"Improved 8 digit code readability"
+"4.3.2":"Improved 8 digit code readability",
+"4.4.0":"Added .code"
 }
