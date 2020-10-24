@@ -1,4 +1,4 @@
-# ChimechoBot
+﻿# ChimechoBot
 
 Discord queue bot for hosting max raids in Pokémon SwSh.
 
@@ -15,6 +15,7 @@ Discord queue bot for hosting max raids in Pokémon SwSh.
 
 ### Everyone
 - `.help` - Displays a list of commands you can use and what they do. Output varies depending on whether you're the owner of the queue or a participant.
+- `.code` - Generate and display a random 8 digit code publicly.
 
 ### Raid participants
 - `.join` - Join the queue.
