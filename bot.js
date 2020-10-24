@@ -197,6 +197,18 @@ client.on('message', async msg => {
 				msg.reply("Queue cleared.");
 
 				break;
+				
+			case 'code': // Generates a random code, functions if Q owner or if no Q exists
+				if(botMethods.hasQueue(msg, QueueTable)){
+					if(!botMethods.isOwner(msg, QueueTable)){
+						msg.reply("Codes will be sent to you when it's your turn. Make sure to have DMs enabled to recieve the code.");
+						break;
+					}
+				}
+
+				msg.channel.send("Your random code is: " + botMethods.randomCode());
+
+				break;
 
 
 			case 'mod': // Commands only usable by mods of the server, these commands ignore owner
